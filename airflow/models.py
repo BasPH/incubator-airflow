@@ -4332,6 +4332,7 @@ class DAG(BaseDag, LoggingMixin):
         orm_dag.owners = owner
         orm_dag.is_active = True
         orm_dag.last_scheduler_run = sync_time
+        orm_dag.last_modified = pendulum.from_timestamp(os.path.getmtime(self.fileloc))
         session.merge(orm_dag)
         session.commit()
 
