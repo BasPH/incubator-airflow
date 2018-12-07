@@ -58,7 +58,10 @@ def upgrade():
             sa.PrimaryKeyConstraint('task_id_from', 'task_id_to', 'dag_id')
         )
 
+        op.add_column('dag', sa.Column('last_modified', sa.DateTime(), nullable=True))
+
 
 def downgrade():
     op.drop_table('task_deps')
     op.drop_table('task')
+    op.drop_column('dag', 'last_modified')

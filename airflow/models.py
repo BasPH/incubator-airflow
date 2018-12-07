@@ -3129,6 +3129,8 @@ class DagModel(Base):
     fileloc = Column(String(2000))
     # String representing the owners
     owners = Column(String(2000))
+    # DateTime when DAG file was last modified
+    last_modified = Column(UtcDateTime)
 
     def __repr__(self):
         return "<DAG: {self.dag_id}>".format(self=self)
