@@ -541,8 +541,8 @@ class DagFileProcessorManager(LoggingMixin):
                                         if num_runs == self._max_runs]
             session = settings.Session()
             db_dag_mtime = {}
-            for d in session.query(models.DagModel):
-                db_dag_mtime[d.fileloc] = d.last_modified
+            for dag_model in session.query(models.DagModel):
+                db_dag_mtime[dag_model.fileloc] = dag_model.last_modified
 
             files_paths_to_queue = []
             for file in list(set(self._file_paths) -
@@ -550,9 +550,9 @@ class DagFileProcessorManager(LoggingMixin):
                                         set(file_paths_recently_processed) -
                                         set(files_paths_at_run_limit)):
                 file_mtime = pendulum.from_timestamp(os.path.getmtime(file))
+                # This will check if the file has been changed, if so the file will be progressed again
                 if file_mtime != db_dag_mtime[file]:
                     files_paths_to_queue.append(file)
-
 
             for file_path, processor in self._processors.items():
                 self.log.debug(
