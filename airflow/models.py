@@ -868,6 +868,34 @@ class DagPickle(Base):
         self.pickle = dag
 
 
+class Task(Base, LoggingMixin):
+    """
+    TODO document here
+    """
+
+    __tablename__ = "task"
+
+    task_id = Column(String(ID_LEN), primary_key=True)
+    dag_id = Column(String(ID_LEN), primary_key=True)
+    pool = Column(String(50))
+    queue = Column(String(50))
+
+    def __init__(self):
+        self._log = logging.getLogger("airflow.task")
+
+
+class TaskDependency(Base, LoggingMixin):
+    """
+    TODO document here
+    """
+
+    __tablename__ = "task_deps"
+
+    task_id_from = Column(String(ID_LEN), primary_key=True)
+    task_id_to = Column(String(ID_LEN), primary_key=True)
+    dag_id = Column(String(ID_LEN), primary_key=True)
+
+
 class TaskInstance(Base, LoggingMixin):
     """
     Task instances store the state of a task instance. This table is the
