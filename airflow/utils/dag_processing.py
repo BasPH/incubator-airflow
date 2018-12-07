@@ -29,6 +29,11 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 
+
+from airflow import settings, models
+
+import pendulum
+
 from airflow.dag.base_dag import BaseDag, BaseDagBag
 from airflow.exceptions import AirflowException
 from airflow.utils import timezone
@@ -534,11 +539,20 @@ class DagFileProcessorManager(LoggingMixin):
             files_paths_at_run_limit = [file_path
                                         for file_path, num_runs in self._run_count.items()
                                         if num_runs == self._max_runs]
+            session = settings.Session()
+            db_dag_mtime = {}
+            for d in session.query(models.DagModel):
+                db_dag_mtime[d.fileloc] = d.last_modified
 
-            files_paths_to_queue = list(set(self._file_paths) -
+            files_paths_to_queue = []
+            for file in list(set(self._file_paths) -
                                         set(file_paths_in_progress) -
                                         set(file_paths_recently_processed) -
-                                        set(files_paths_at_run_limit))
+                                        set(files_paths_at_run_limit)):
+                file_mtime = pendulum.from_timestamp(os.path.getmtime(file))
+                if file_mtime != db_dag_mtime[file]:
+                    files_paths_to_queue.append(file)
+
 
             for file_path, processor in self._processors.items():
                 self.log.debug(
