@@ -30,7 +30,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 
 
-from airflow import settings, models
+import airflow
 
 import pendulum
 
@@ -539,9 +539,9 @@ class DagFileProcessorManager(LoggingMixin):
             files_paths_at_run_limit = [file_path
                                         for file_path, num_runs in self._run_count.items()
                                         if num_runs == self._max_runs]
-            session = settings.Session()
+            session = airflow.settings.Session()
             db_dag_mtime = {}
-            for dag_model in session.query(models.DagModel):
+            for dag_model in session.query(airflow.models.DagModel):
                 db_dag_mtime[dag_model.fileloc] = dag_model.last_modified
 
             files_paths_to_queue = []
@@ -551,7 +551,7 @@ class DagFileProcessorManager(LoggingMixin):
                                         set(files_paths_at_run_limit)):
                 file_mtime = pendulum.from_timestamp(os.path.getmtime(file))
                 # This will check if the file has been changed, if so the file will be progressed again
-                if file_mtime != db_dag_mtime[file]:
+                if file_mtime != db_dag_mtime[file] or True: # TODO: remove `or True`
                     files_paths_to_queue.append(file)
 
             for file_path, processor in self._processors.items():

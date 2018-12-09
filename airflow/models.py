@@ -880,8 +880,11 @@ class Task(Base, LoggingMixin):
     pool = Column(String(50))
     queue = Column(String(50))
 
-    def __init__(self):
-        self._log = logging.getLogger("airflow.task")
+    def __init__(self, task_id, dag_id, pool, queue):
+        self.task_id = task_id
+        self.dag_id = dag_id
+        self.pool = pool
+        self.queue = queue
 
 
 class TaskDependency(Base, LoggingMixin):
@@ -894,6 +897,11 @@ class TaskDependency(Base, LoggingMixin):
     task_id_from = Column(String(ID_LEN), primary_key=True)
     task_id_to = Column(String(ID_LEN), primary_key=True)
     dag_id = Column(String(ID_LEN), primary_key=True)
+
+    def __init__(self, task_id_from, task_id_to, dag_id):
+        self.task_id_from = task_id_from
+        self.task_id_to = task_id_to
+        self.dag_id = dag_id
 
 
 class TaskInstance(Base, LoggingMixin):
@@ -4324,6 +4332,17 @@ class DAG(BaseDag, LoggingMixin):
 
         orm_dag = session.query(
             DagModel).filter(DagModel.dag_id == self.dag_id).first()
+        orm_tasks = session.query(
+            Task).filter(Task.dag_id == self.dag_id)
+        orm_tasks_deps = session.query(
+            TaskDependency).filter(TaskDependency.dag_id == self.dag_id)
+        tasks = []
+        task_deps = []
+        for task in self.tasks:
+            tasks.append(Task(task.task_id, self.dag_id, task.pool, task.queue))
+            for dep in task._upstream_task_ids:
+                task_deps.append(TaskDependency(dep, task.task_id, self.dag_id))
+
         if not orm_dag:
             orm_dag = DagModel(dag_id=self.dag_id)
             self.log.info("Creating ORM DAG for %s", self.dag_id)
@@ -4334,6 +4353,16 @@ class DAG(BaseDag, LoggingMixin):
         orm_dag.last_scheduler_run = sync_time
         orm_dag.last_modified = pendulum.from_timestamp(os.path.getmtime(self.fileloc))
         session.merge(orm_dag)
+
+        for task in tasks:
+            if task not in orm_tasks: session.merge(task)
+        for dep in task_deps:
+            if dep not in orm_tasks_deps: session.merge(dep)
+        for task in orm_tasks:
+            if task not in tasks: session.delete(task)
+        for dep in orm_tasks_deps:
+            if dep not in task_deps: session.delete(dep)
+
         session.commit()
 
         for subdag in self.subdags:
