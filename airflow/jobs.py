@@ -26,6 +26,8 @@ import getpass
 import logging
 import multiprocessing
 import os
+
+import pendulum
 import psutil
 import signal
 import six
@@ -46,7 +48,7 @@ from time import sleep
 from airflow import configuration as conf
 from airflow import executors, models, settings
 from airflow.exceptions import AirflowException
-from airflow.models import DAG, DagRun
+from airflow.models import DAG, DagRun, DagModel, Task, TaskDependency, TaskInstance
 from airflow.settings import Stats
 from airflow.task.task_runner import get_task_runner
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, RUN_DEPS
@@ -513,6 +515,233 @@ class DagFileProcessor(AbstractDagFileProcessor, LoggingMixin):
 
 
 class SchedulerJob(BaseJob):
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'SchedulerJob'
+    }
+
+    def __init__(
+        self,
+        dag_id=None,
+        dag_ids=None,
+        subdir=settings.DAGS_FOLDER,
+        num_runs=-1,
+        file_process_interval=conf.getint('scheduler',
+                                          'min_file_process_interval'),
+        processor_poll_interval=1.0,
+        run_duration=None,
+        do_pickle=False,
+        log=None,
+        *args, **kwargs):
+        """
+        :param dag_id: if specified, only schedule tasks with this DAG ID
+        :type dag_id: unicode
+        :param dag_ids: if specified, only schedule tasks with these DAG IDs
+        :type dag_ids: list[unicode]
+        :param subdir: directory containing Python files with Airflow DAG
+        definitions, or a specific path to a file
+        :type subdir: unicode
+        :param num_runs: The number of times to try to schedule each DAG file.
+        -1 for unlimited within the run_duration.
+        :param processor_poll_interval: The number of seconds to wait between
+        polls of running processors
+        :param run_duration: how long to run (in seconds) before exiting
+        :type run_duration: int
+        :param do_pickle: once a DAG object is obtained by executing the Python
+        file, whether to serialize the DAG object to the DB
+        :type do_pickle: bool
+        """
+        # for BaseJob compatibility
+        self.dag_id = dag_id
+        self.dag_ids = [dag_id] if dag_id else []
+        if dag_ids:
+            self.dag_ids.extend(dag_ids)
+
+        self.subdir = subdir
+
+        self.num_runs = num_runs
+        self.run_duration = run_duration
+        self._processor_poll_interval = processor_poll_interval
+
+        self.do_pickle = do_pickle
+        super(SchedulerJob, self).__init__(*args, **kwargs)
+
+        self.heartrate = conf.getint('scheduler', 'SCHEDULER_HEARTBEAT_SEC')
+        self.max_threads = conf.getint('scheduler', 'max_threads')
+
+        if log:
+            self._log = log
+
+        self.using_sqlite = False
+        if 'sqlite' in conf.get('core', 'sql_alchemy_conn'):
+            if self.max_threads > 1:
+                self.log.error("Cannot use more than 1 thread when using sqlite. Setting max_threads to 1")
+            self.max_threads = 1
+            self.using_sqlite = True
+
+        # How often to scan the DAGs directory for new files. Default to 5 minutes.
+        self.dag_dir_list_interval = conf.getint('scheduler',
+                                                 'dag_dir_list_interval')
+        # How often to print out DAG file processing stats to the log. Default to
+        # 30 seconds.
+        self.print_stats_interval = conf.getint('scheduler',
+                                                'print_stats_interval')
+        # Parse and schedule each file no faster than this interval. Default
+        # to 3 minutes.
+        self.file_process_interval = file_process_interval
+
+        self.max_tis_per_query = conf.getint('scheduler', 'max_tis_per_query')
+        if run_duration is None:
+            self.run_duration = conf.getint('scheduler',
+                                            'run_duration')
+
+    @provide_session
+    def _execute(self, session=None):
+
+        pickle_dags = False
+        if self.do_pickle and self.executor.__class__ not in \
+            (executors.LocalExecutor, executors.SequentialExecutor):
+            pickle_dags = True
+
+        while True:
+            dags = session.query(DagModel).filter(DagModel.is_paused == False)
+            dags = self.detect_new_dags(dags, pickle_dags)
+
+            for dagmodel in dags:
+                self._dag_heartbeat(dagmodel)
+
+            time.sleep(self._processor_poll_interval)
+
+    @provide_session
+    def detect_new_dags(self, dags, pickle_dags, session=None):
+        # Build up a list of Python files that could contain DAGs
+        self.log.debug("Searching for files in %s", self.subdir)
+        known_file_paths = list_py_file_paths(self.subdir)
+        self.log.debug("There are %s files in %s", len(known_file_paths), self.subdir)
+
+        db_dag_mtime = {}
+        for dag_model in dags:
+            db_dag_mtime[dag_model.fileloc] = dag_model.last_modified
+
+        files_paths_to_queue = []
+        for file in known_file_paths:
+            file_mtime = pendulum.from_timestamp(os.path.getmtime(file))
+            # This will check if the file has been changed, if so the file will be progressed again
+            if file_mtime != db_dag_mtime[file]:
+                files_paths_to_queue.append(file)
+
+        if len(files_paths_to_queue) > 0:
+            for file in files_paths_to_queue:
+                self.log.info("Start parsing file: " + file)
+                self.process_file(file, pickle_dags, pickle_dags)
+                self.log.info("Done parsing file: " + file)
+            return session.query(DagModel).filter(DagModel.is_paused == False)
+        else: return dags
+
+
+    @provide_session
+    def _dag_heartbeat(self, dagmodel, session=None):
+        self.log.info(str(dagmodel))
+        tasks = session.query(Task).filter(DagModel.dag_id == dagmodel.dag_id)
+        tasks_deps = session.query(TaskDependency).filter(DagModel.dag_id == dagmodel.dag_id)
+        dags_runs = session.query(DagRun).filter(DagModel.dag_id == dagmodel.dag_id).filter(DagRun.state == "running")
+        for dagrun in dags_runs:
+            self._dag_run_heartbeat(dagmodel, dagrun)
+
+    @provide_session
+    def _dag_run_heartbeat(self, dagmodel, dagrun, session=None):
+        tasks = session.query(Task).filter(DagModel.dag_id == dagmodel.dag_id)
+        tasks_deps = session.query(TaskDependency).filter(DagModel.dag_id == dagmodel.dag_id)
+        tis = session.query(TaskInstance).filter(TaskInstance.dag_id == dagmodel.dag_id).filter(TaskInstance.execution_date == dagrun.execution_date)
+
+        pass
+
+
+    @provide_session
+    def process_file(self, file_path, pickle_dags=False, session=None):
+        """
+        Process a Python file containing Airflow DAGs.
+
+        This includes:
+
+        1. Execute the file and look for DAG objects in the namespace.
+        2. Pickle the DAG and save it to the DB (if necessary).
+        3. For each DAG, see what tasks should run and create appropriate task
+        instances in the DB.
+        4. Record any errors importing the file into ORM
+        5. Kill (in ORM) any task instances belonging to the DAGs that haven't
+        issued a heartbeat in a while.
+
+        Returns a list of SimpleDag objects that represent the DAGs found in
+        the file
+
+        :param file_path: the path to the Python file that should be executed
+        :type file_path: unicode
+        :param pickle_dags: whether serialize the DAGs found in the file and
+        save them to the db
+        :type pickle_dags: bool
+        :return: a list of SimpleDags made from the Dags found in the file
+        :rtype: list[SimpleDag]
+        """
+        self.log.info("Processing file %s for tasks to queue", file_path)
+        # As DAGs are parsed from this file, they will be converted into SimpleDags
+        simple_dags = []
+
+        try:
+            dagbag = models.DagBag(file_path)
+        except Exception:
+            self.log.exception("Failed at reloading the DAG file %s", file_path)
+            Stats.incr('dag_file_refresh_error', 1, 1)
+            return []
+
+        if len(dagbag.dags) > 0:
+            self.log.info("DAG(s) %s retrieved from %s", dagbag.dags.keys(), file_path)
+        else:
+            self.log.warning("No viable dags retrieved from %s", file_path)
+            self.update_import_errors(session, dagbag)
+            return []
+
+        # Save individual DAGs in the ORM and update DagModel.last_scheduled_time
+        for dag in dagbag.dags.values():
+            dag.sync_to_db()
+
+
+    @staticmethod
+    def update_import_errors(session, dagbag):
+        """
+        For the DAGs in the given DagBag, record any associated import errors and clears
+        errors for files that no longer have them. These are usually displayed through the
+        Airflow UI so that users know that there are issues parsing DAGs.
+
+        :param session: session for ORM operations
+        :type session: sqlalchemy.orm.session.Session
+        :param dagbag: DagBag containing DAGs with import errors
+        :type dagbag: models.Dagbag
+        """
+        # Clear the errors of the processed files
+        for dagbag_file in dagbag.file_last_changed:
+            session.query(models.ImportError).filter(
+                models.ImportError.filename == dagbag_file
+            ).delete()
+
+        # Add the errors of the processed files
+        for filename, stacktrace in six.iteritems(dagbag.import_errors):
+            session.add(models.ImportError(
+                filename=filename,
+                stacktrace=stacktrace))
+        session.commit()
+
+    def create_dag_run(self, dagmodel):
+        pass # TODO: implement me
+
+    def _process_task_instances(self, dagmodel, tis_out):
+        pass # TODO: implement me
+
+    def manage_slas(self, dagmodel):
+        pass # TODO: implement me
+
+
+class SchedulerJobOld(BaseJob):
     """
     This SchedulerJob runs for a specific time interval and schedules the jobs
     that are ready to run. It figures out the latest runs for each
