@@ -886,6 +886,12 @@ class Task(Base, LoggingMixin):
         self.pool = pool
         self.queue = queue
 
+    def __eq__(self, other):
+        return (
+            self.task_id == other.task_id
+            and self.dag_id == other.dag_id
+        )
+
 
 class TaskDependency(Base, LoggingMixin):
     """
@@ -902,6 +908,13 @@ class TaskDependency(Base, LoggingMixin):
         self.task_id_from = task_id_from
         self.task_id_to = task_id_to
         self.dag_id = dag_id
+
+    def __eq__(self, other):
+        return (
+            self.task_id_from == other.task_id_from
+            and self.task_id_to == self.task_id_to
+            and self.dag_id == other.dag_id
+        )
 
 
 class TaskInstance(Base, LoggingMixin):
