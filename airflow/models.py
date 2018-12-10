@@ -3152,6 +3152,10 @@ class DagModel(Base):
     owners = Column(String(2000))
     # DateTime when DAG file was last modified
     last_modified = Column(UtcDateTime)
+    # Schedule interval
+    schedule_interval = Column(String(20))
+    # Start date of the dag
+    start_date = Column(UtcDateTime)
 
     def __repr__(self):
         return "<DAG: {self.dag_id}>".format(self=self)
@@ -4365,6 +4369,8 @@ class DAG(BaseDag, LoggingMixin):
         orm_dag.is_active = True
         orm_dag.last_scheduler_run = sync_time
         orm_dag.last_modified = pendulum.from_timestamp(os.path.getmtime(self.fileloc))
+        orm_dag.schedule_interval = str(self.schedule_interval)
+        orm_dag.start_date = self.start_date
         session.merge(orm_dag)
 
         for task in tasks:

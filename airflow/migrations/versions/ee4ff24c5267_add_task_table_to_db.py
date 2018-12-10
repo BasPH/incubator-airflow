@@ -59,9 +59,13 @@ def upgrade():
         )
 
         op.add_column('dag', sa.Column('last_modified', sa.DateTime(), nullable=True))
+        op.add_column('dag', sa.Column('start_date', sa.DateTime(), nullable=True))
+        op.add_column('dag', sa.Column('schedule_interval', sa.String(length=20), nullable=True))
 
 
 def downgrade():
     op.drop_table('task_deps')
     op.drop_table('task')
+    op.drop_column('dag', 'schedule_interval')
     op.drop_column('dag', 'last_modified')
+    op.drop_column('dag', 'start_date')
