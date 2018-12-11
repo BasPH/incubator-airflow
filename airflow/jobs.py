@@ -652,8 +652,12 @@ class SchedulerJob(BaseJob):
     def _dag_run_heartbeat(self, dagmodel, dagrun, session=None):
         tasks = session.query(Task).filter(DagModel.dag_id == dagmodel.dag_id)
         tasks_deps = session.query(TaskDependency).filter(DagModel.dag_id == dagmodel.dag_id)
-        tis = session.query(TaskInstance).filter(TaskInstance.dag_id == dagmodel.dag_id).filter(TaskInstance.execution_date == dagrun.execution_date)
-
+        tis = session.query(TaskInstance)\
+            .filter(TaskInstance.dag_id == dagmodel.dag_id)\
+            .filter(TaskInstance.execution_date == dagrun.execution_date)
+        # TODO: schedule tasks that is ready top run
+        # TODO: set dagrun state on success when all task are done
+        # TODO: set dagrun state on failed if a task is failed and nothing can be done anymore
         pass
 
 
@@ -705,7 +709,6 @@ class SchedulerJob(BaseJob):
         for dag in dagbag.dags.values():
             dag.sync_to_db()
 
-
     @staticmethod
     def update_import_errors(session, dagbag):
         """
@@ -731,8 +734,17 @@ class SchedulerJob(BaseJob):
                 stacktrace=stacktrace))
         session.commit()
 
-    def create_dag_run(self, dagmodel):
-        pass # TODO: implement me
+    @provide_session
+    def _schedule_task(self, dagmodel, dagrun, execution_date, session=None):
+        """
+        This will schedule a single task, no checking will be done here.
+        :param dagmodel: Dag of the task
+        :param dagrun: Dagrun of the task
+        :param execution_date: Execution date of the task
+        :param session: Database session, see @provide_session
+        :return:
+        """
+        raise NotImplementedError
 
     def _process_task_instances(self, dagmodel, tis_out):
         pass # TODO: implement me

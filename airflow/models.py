@@ -3165,6 +3165,28 @@ class DagModel(Base):
     def get_current(cls, dag_id, session=None):
         return session.query(cls).filter(cls.dag_id == dag_id).first()
 
+    @provide_session
+    def trigger_dag_run(self, execution_date=None, session=None):
+        if execution_date is None:
+            # if execution_date is none this is a manual run.
+            raise NotImplementedError
+        raise NotImplementedError # TODO: implement me
+
+    @provide_session
+    def next_execution_date(self, session=None):
+        """
+        :return: next execution date as string
+        """
+        raise NotImplementedError # TODO: implement me
+        # TODO: Add backfill option to dagmodel
+        return "execution_date"
+
+    @provide_session
+    def trigger_next_scheduled_run(self, session=None):
+        next_date = self.next_execution_date
+        if next_date is not None:
+            self.trigger_dag_run(next_date)
+
 
 @functools.total_ordering
 class DAG(BaseDag, LoggingMixin):
