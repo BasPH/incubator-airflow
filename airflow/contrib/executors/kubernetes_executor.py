@@ -29,7 +29,8 @@ from airflow.contrib.kubernetes.kube_client import get_kube_client
 from airflow.contrib.kubernetes.worker_configuration import WorkerConfiguration
 from airflow.executors.base_executor import BaseExecutor
 from airflow.executors import Executors
-from airflow.models import TaskInstance, KubeResourceVersion, KubeWorkerIdentifier
+from airflow.models import TaskInstance, KubeWorkerIdentifier
+from airflow.models.kuberesourceversion import KubeResourceVersion
 from airflow.utils.state import State
 from airflow import configuration, settings
 from airflow.exceptions import AirflowConfigException, AirflowException
