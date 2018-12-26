@@ -19,7 +19,7 @@
 
 from sqlalchemy import Boolean, Column, true as sqltrue, String
 
-from airflow.models import Base
+from airflow.models.base import Base
 from airflow.utils.db import provide_session
 
 
