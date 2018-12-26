@@ -29,9 +29,9 @@ import ssl
 
 from flask import url_for, redirect
 
-from airflow import models
 from airflow import configuration
 from airflow.configuration import AirflowConfigException
+from airflow.models.user import User
 from airflow.utils.db import provide_session
 
 import traceback
@@ -124,7 +124,7 @@ def groups_user(conn, search_base, user_filter, user_name_att, username):
     return groups_list
 
 
-class LdapUser(models.User):
+class LdapUser(User):
     def __init__(self, user):
         self.user = user
         self.ldap_groups = []
@@ -272,7 +272,7 @@ def load_user(userid, session=None):
     if not userid or userid == 'None':
         return None
 
-    user = session.query(models.User).filter(models.User.id == int(userid)).first()
+    user = session.query(User).filter(User.id == int(userid)).first()
     return LdapUser(user)
 
 
@@ -300,13 +300,11 @@ def login(self, request, session=None):
         LdapUser.try_login(username, password)
         log.info("User %s successfully authenticated", username)
 
-        user = session.query(models.User).filter(
-            models.User.username == username).first()
+        user = session.query(User).filter(
+            User.username == username).first()
 
         if not user:
-            user = models.User(
-                username=username,
-                is_superuser=False)
+            user = User(username=username, is_superuser=False)
             session.add(user)
 
         session.commit()

@@ -21,8 +21,8 @@ import unittest
 
 from backports.configparser import DuplicateSectionError
 
-from airflow import models
 from airflow import configuration
+from airflow.models.user import User
 from airflow.www import app as application
 from airflow.settings import Session
 from airflow.contrib.auth.backends.password_auth import PasswordUser
@@ -43,7 +43,7 @@ class ApiPasswordTests(unittest.TestCase):
         self.app = application.create_app(testing=True)
 
         session = Session()
-        user = models.User()
+        user = User()
         password_user = PasswordUser(user)
         password_user.username = 'hello'
         password_user.password = 'world'
@@ -66,6 +66,6 @@ class ApiPasswordTests(unittest.TestCase):
 
     def tearDown(self):
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()

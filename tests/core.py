@@ -49,6 +49,7 @@ from airflow.models import Variable
 from airflow import jobs, models, DAG, utils, macros, settings, exceptions
 from airflow.models import BaseOperator
 from airflow.models.connection import Connection
+from airflow.models.user import User
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.check_operator import CheckOperator, ValueCheckOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
@@ -2099,7 +2100,7 @@ class SecureModeWebUiTests(unittest.TestCase):
 
 class PasswordUserTest(unittest.TestCase):
     def setUp(self):
-        user = models.User()
+        user = User()
         from airflow.contrib.auth.backends.password_auth import PasswordUser
         self.password_user = PasswordUser(user)
         self.password_user.username = "password_test"
@@ -2135,7 +2136,7 @@ class PasswordUserTest(unittest.TestCase):
         query_user = session.query(PasswordUser).filter_by(
             username=self.password_user.username).first()
         self.assertTrue(query_user.authenticate('test_password'))
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
 
@@ -2151,7 +2152,7 @@ class WebPasswordAuthTest(unittest.TestCase):
         from airflow.contrib.auth.backends.password_auth import PasswordUser
 
         session = Session()
-        user = models.User()
+        user = User()
         password_user = PasswordUser(user)
         password_user.username = 'airflow_passwordauth'
         password_user.password = 'password'
@@ -2201,7 +2202,7 @@ class WebPasswordAuthTest(unittest.TestCase):
     def tearDown(self):
         configuration.load_test_config()
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
         configuration.conf.set("webserver", "authenticate", "False")
@@ -2288,7 +2289,7 @@ class WebLdapAuthTest(unittest.TestCase):
     def tearDown(self):
         configuration.load_test_config()
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
         configuration.conf.set("webserver", "authenticate", "False")
@@ -2316,8 +2317,7 @@ class LdapGroupTest(unittest.TestCase):
                  "user2": ["group2"]
                  }
         for user in users:
-            mu = models.User(username=user,
-                             is_superuser=False)
+            mu = User(username=user, is_superuser=False)
             auth = LdapUser(mu)
             self.assertEqual(set(users[user]), set(auth.ldap_groups))
 

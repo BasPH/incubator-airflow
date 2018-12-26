@@ -99,7 +99,7 @@ For example, open a Python shell and
 from airflow import models, settings
 
 session = settings.Session()
-users = session.query(models.User).all()  # [admin, regular_user]
+users = session.query(models.user.User).all()  # [admin, regular_user]
 
 users[1].superuser  # False
 

@@ -34,6 +34,7 @@ from werkzeug.test import Client
 from airflow import models, configuration
 from airflow.config_templates.airflow_local_settings import DEFAULT_LOGGING_CONFIG
 from airflow.models import DAG, DagRun, TaskInstance
+from airflow.models.user import User
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.utils.timezone import datetime
@@ -50,9 +51,9 @@ class TestChartModelView(unittest.TestCase):
         super(TestChartModelView, cls).setUpClass()
         session = Session()
         session.query(models.Chart).delete()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
-        user = models.User(username='airflow')
+        user = User(username='airflow')
         session.add(user)
         session.commit()
         session.close()
@@ -79,7 +80,7 @@ class TestChartModelView(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
         super(TestChartModelView, cls).tearDownClass()
@@ -178,9 +179,9 @@ class TestKnownEventView(unittest.TestCase):
         super(TestKnownEventView, cls).setUpClass()
         session = Session()
         session.query(models.KnownEvent).delete()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
-        user = models.User(username='airflow')
+        user = User(username='airflow')
         session.add(user)
         session.commit()
         cls.user_id = user.id
@@ -211,7 +212,7 @@ class TestKnownEventView(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
         super(TestKnownEventView, cls).tearDownClass()
@@ -424,9 +425,9 @@ class TestVarImportView(unittest.TestCase):
     def setUpClass(cls):
         super(TestVarImportView, cls).setUpClass()
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
-        user = models.User(username='airflow')
+        user = User(username='airflow')
         session.add(user)
         session.commit()
         session.close()
@@ -444,7 +445,7 @@ class TestVarImportView(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         session = Session()
-        session.query(models.User).delete()
+        session.query(User).delete()
         session.commit()
         session.close()
         super(TestVarImportView, cls).tearDownClass()

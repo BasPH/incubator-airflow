@@ -28,11 +28,12 @@ from wtforms.validators import InputRequired
 # pykerberos should be used as it verifies the KDC, the "kerberos" module does not do so
 # and make it possible to spoof the KDC
 import kerberos
+
+from airflow.models.user import User
 from airflow.security import utils
 
 from flask import url_for, redirect
 
-from airflow import models
 from airflow import configuration
 from airflow.utils.db import provide_session
 from airflow.utils.log.logging_mixin import LoggingMixin
@@ -46,7 +47,7 @@ class AuthenticationError(Exception):
     pass
 
 
-class KerberosUser(models.User, LoggingMixin):
+class KerberosUser(User, LoggingMixin):
     def __init__(self, user):
         self.user = user
 
@@ -113,7 +114,7 @@ def load_user(userid, session=None):
     if not userid or userid == 'None':
         return None
 
-    user = session.query(models.User).filter(models.User.id == int(userid)).first()
+    user = session.query(User).filter(User.id == int(userid)).first()
     return KerberosUser(user)
 
 
@@ -140,13 +141,10 @@ def login(self, request, session=None):
     try:
         KerberosUser.authenticate(username, password)
 
-        user = session.query(models.User).filter(
-            models.User.username == username).first()
+        user = session.query(User).filter(User.username == username).first()
 
         if not user:
-            user = models.User(
-                username=username,
-                is_superuser=False)
+            user = User(username=username, is_superuser=False)
 
         session.merge(user)
         session.commit()

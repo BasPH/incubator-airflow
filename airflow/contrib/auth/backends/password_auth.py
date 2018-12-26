@@ -36,7 +36,7 @@ from sqlalchemy import Column, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from airflow import settings
-from airflow import models
+from airflow.models.user import User
 from airflow.utils.db import provide_session
 from airflow.utils.log.logging_mixin import LoggingMixin
 
@@ -52,7 +52,7 @@ class AuthenticationError(Exception):
     pass
 
 
-class PasswordUser(models.User):
+class PasswordUser(User):
     _password = Column('password', String(255))
 
     def __init__(self, user):
@@ -105,7 +105,7 @@ def load_user(userid, session=None):
     if not userid or userid == 'None':
         return None
 
-    user = session.query(models.User).filter(models.User.id == int(userid)).first()
+    user = session.query(User).filter(User.id == int(userid)).first()
     return PasswordUser(user)
 
 

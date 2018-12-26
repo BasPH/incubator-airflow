@@ -31,6 +31,7 @@ import airflow
 from airflow import configuration as conf
 from airflow import models, LoggingMixin
 from airflow.models.connection import Connection
+from airflow.models.user import User
 from airflow.settings import Session
 
 from airflow.www.blueprints import routes
@@ -106,7 +107,7 @@ def create_app(config=None, testing=False):
         av(vs.ConfigurationView(
             name='Configuration', category="Admin"))
         av(vs.UserModelView(
-            models.User, Session, name="Users", category="Admin"))
+            User, Session, name="Users", category="Admin"))
         av(vs.ConnectionModelView(
             Connection, Session, name="Connections", category="Admin"))
         av(vs.VariableView(

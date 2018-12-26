@@ -30,7 +30,7 @@ from flask_login import login_required, current_user, logout_user  # noqa: F401
 from flask import url_for, redirect
 
 from airflow import settings  # noqa: F401
-from airflow import models
+from airflow.models.user import User
 from airflow.utils.db import provide_session
 
 DEFAULT_USERNAME = 'airflow'
@@ -71,18 +71,16 @@ class DefaultUser(object):
 @login_manager.user_loader
 @provide_session
 def load_user(userid, session=None):
-    user = session.query(models.User).filter(models.User.id == userid).first()
+    user = session.query(User).filter(User.id == userid).first()
     return DefaultUser(user)
 
 
 @provide_session
 def login(self, request, session=None):
-    user = session.query(models.User).filter(
-        models.User.username == DEFAULT_USERNAME).first()
+    user = session.query(User).filter(
+        User.username == DEFAULT_USERNAME).first()
     if not user:
-        user = models.User(
-            username=DEFAULT_USERNAME,
-            is_superuser=True)
+        user = User(username=DEFAULT_USERNAME, is_superuser=True)
     session.merge(user)
     session.commit()
     flask_login.login_user(DefaultUser(user))

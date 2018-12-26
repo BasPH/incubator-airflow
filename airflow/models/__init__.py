@@ -591,24 +591,6 @@ class DagBag(BaseDagBag, LoggingMixin):
         )
 
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String(ID_LEN), unique=True)
-    email = Column(String(500))
-    superuser = Column(Boolean(), default=False)
-
-    def __repr__(self):
-        return self.username
-
-    def get_id(self):
-        return str(self.id)
-
-    def is_superuser(self):
-        return self.superuser
-
-
 class TaskInstance(Base, LoggingMixin):
     """
     Task instances store the state of a task instance. This table is the
