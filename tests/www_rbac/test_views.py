@@ -38,6 +38,7 @@ from airflow import models, settings
 from airflow.config_templates.airflow_local_settings import DEFAULT_LOGGING_CONFIG
 from airflow.models import DAG, DagRun, TaskInstance
 from airflow.models.connection import Connection
+from airflow.models.pool import Pool
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.utils import dates, timezone
@@ -224,7 +225,7 @@ class TestPoolModelView(TestBase):
         }
 
     def tearDown(self):
-        self.clear_table(models.Pool)
+        self.clear_table(Pool)
         super(TestPoolModelView, self).tearDown()
 
     def test_create_pool_with_same_name(self):

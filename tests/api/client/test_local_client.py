@@ -27,6 +27,7 @@ from airflow import AirflowException
 from airflow.api.client.local_client import Client
 from airflow import models
 from airflow import settings
+from airflow.models.pool import Pool
 from airflow.utils import timezone
 from airflow.utils.state import State
 
@@ -41,7 +42,7 @@ class TestLocalClient(unittest.TestCase):
     def setUpClass(cls):
         super(TestLocalClient, cls).setUpClass()
         session = settings.Session()
-        session.query(models.Pool).delete()
+        session.query(Pool).delete()
         session.commit()
         session.close()
 
@@ -51,7 +52,7 @@ class TestLocalClient(unittest.TestCase):
         self.session = settings.Session()
 
     def tearDown(self):
-        self.session.query(models.Pool).delete()
+        self.session.query(Pool).delete()
         self.session.commit()
         self.session.close()
         super(TestLocalClient, self).tearDown()
@@ -132,10 +133,10 @@ class TestLocalClient(unittest.TestCase):
     def test_create_pool(self):
         pool = self.client.create_pool(name='foo', slots=1, description='')
         self.assertEqual(pool, ('foo', 1, ''))
-        self.assertEqual(self.session.query(models.Pool).count(), 1)
+        self.assertEqual(self.session.query(Pool).count(), 1)
 
     def test_delete_pool(self):
         self.client.create_pool(name='foo', slots=1, description='')
-        self.assertEqual(self.session.query(models.Pool).count(), 1)
+        self.assertEqual(self.session.query(Pool).count(), 1)
         self.client.delete_pool(name='foo')
-        self.assertEqual(self.session.query(models.Pool).count(), 0)
+        self.assertEqual(self.session.query(Pool).count(), 0)

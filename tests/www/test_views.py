@@ -34,6 +34,7 @@ from werkzeug.test import Client
 from airflow import models, configuration
 from airflow.config_templates.airflow_local_settings import DEFAULT_LOGGING_CONFIG
 from airflow.models import DAG, DagRun, TaskInstance
+from airflow.models.pool import Pool
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.utils.timezone import datetime
@@ -247,7 +248,7 @@ class TestPoolModelView(unittest.TestCase):
     def setUpClass(cls):
         super(TestPoolModelView, cls).setUpClass()
         session = Session()
-        session.query(models.Pool).delete()
+        session.query(Pool).delete()
         session.commit()
         session.close()
 
@@ -265,7 +266,7 @@ class TestPoolModelView(unittest.TestCase):
         }
 
     def tearDown(self):
-        self.session.query(models.Pool).delete()
+        self.session.query(Pool).delete()
         self.session.commit()
         self.session.close()
         super(TestPoolModelView, self).tearDown()
@@ -277,7 +278,7 @@ class TestPoolModelView(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.session.query(models.Pool).count(), 1)
+        self.assertEqual(self.session.query(Pool).count(), 1)
 
     def test_create_pool_with_same_name(self):
         # create test pool
@@ -293,7 +294,7 @@ class TestPoolModelView(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertIn('Already exists.', response.data.decode('utf-8'))
-        self.assertEqual(self.session.query(models.Pool).count(), 1)
+        self.assertEqual(self.session.query(Pool).count(), 1)
 
     def test_create_pool_with_empty_name(self):
         self.pool['pool'] = ''
@@ -303,7 +304,7 @@ class TestPoolModelView(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertIn('This field is required.', response.data.decode('utf-8'))
-        self.assertEqual(self.session.query(models.Pool).count(), 0)
+        self.assertEqual(self.session.query(Pool).count(), 0)
 
 
 class TestLogView(unittest.TestCase):

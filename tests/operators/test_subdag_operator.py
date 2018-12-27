@@ -79,8 +79,8 @@ class SubDagOperatorTests(unittest.TestCase):
         subdag = DAG('parent.child', default_args=default_args)
 
         session = airflow.settings.Session()
-        pool_1 = airflow.models.Pool(pool='test_pool_1', slots=1)
-        pool_10 = airflow.models.Pool(pool='test_pool_10', slots=10)
+        pool_1 = airflow.models.pool.Pool(pool='test_pool_1', slots=1)
+        pool_10 = airflow.models.pool.Pool(pool='test_pool_10', slots=10)
         session.add(pool_1)
         session.add(pool_10)
         session.commit()
@@ -110,8 +110,8 @@ class SubDagOperatorTests(unittest.TestCase):
         subdag = DAG('parent.child', default_args=default_args)
 
         session = airflow.settings.Session()
-        pool_1 = airflow.models.Pool(pool='test_pool_1', slots=1)
-        pool_10 = airflow.models.Pool(pool='test_pool_10', slots=10)
+        pool_1 = airflow.models.pool.Pool(pool='test_pool_1', slots=1)
+        pool_10 = airflow.models.pool.Pool(pool='test_pool_10', slots=10)
         session.add(pool_1)
         session.add(pool_10)
         session.commit()

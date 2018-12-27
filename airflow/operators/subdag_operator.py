@@ -19,7 +19,8 @@
 
 from airflow.exceptions import AirflowException
 from airflow.executors.sequential_executor import SequentialExecutor
-from airflow.models import BaseOperator, Pool
+from airflow.models import BaseOperator
+from airflow.models.pool import Pool
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.db import provide_session
 

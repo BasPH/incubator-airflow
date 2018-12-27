@@ -45,7 +45,8 @@ from airflow.bin import cli
 import airflow.example_dags
 from airflow.executors import BaseExecutor, SequentialExecutor
 from airflow.jobs import BaseJob, BackfillJob, SchedulerJob, LocalTaskJob
-from airflow.models import DAG, DagModel, DagBag, DagRun, Pool, TaskInstance as TI
+from airflow.models import DAG, DagModel, DagBag, DagRun, TaskInstance as TI
+from airflow.models.pool import Pool
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.task.task_runner.base_task_runner import BaseTaskRunner
@@ -1489,8 +1490,8 @@ class SchedulerJobTest(unittest.TestCase):
         for ti in tis:
             ti.state = State.SCHEDULED
             session.merge(ti)
-        pool = models.Pool(pool='a', slots=1, description='haha')
-        pool2 = models.Pool(pool='b', slots=100, description='haha')
+        pool = Pool(pool='a', slots=1, description='haha')
+        pool2 = Pool(pool='b', slots=100, description='haha')
         session.add(pool)
         session.add(pool2)
         session.commit()

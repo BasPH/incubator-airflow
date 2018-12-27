@@ -31,6 +31,7 @@ import airflow
 from airflow import configuration as conf
 from airflow import models, LoggingMixin
 from airflow.models.connection import Connection
+from airflow.models.pool import Pool
 from airflow.settings import Session
 
 from airflow.www.blueprints import routes
@@ -102,7 +103,7 @@ def create_app(config=None, testing=False):
         av(vs.JobModelView(
             jobs.BaseJob, Session, name="Jobs", category="Browse"))
         av(vs.PoolModelView(
-            models.Pool, Session, name="Pools", category="Admin"))
+            Pool, Session, name="Pools", category="Admin"))
         av(vs.ConfigurationView(
             name='Configuration', category="Admin"))
         av(vs.UserModelView(

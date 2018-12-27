@@ -18,7 +18,7 @@
 # under the License.
 
 from airflow.exceptions import AirflowBadRequest, PoolNotFound
-from airflow.models import Pool
+from airflow.models.pool import Pool
 from airflow.utils.db import provide_session
 
 

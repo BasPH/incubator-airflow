@@ -56,6 +56,7 @@ from airflow.api.common.experimental.mark_tasks import (set_dag_run_state_to_suc
                                                         set_dag_run_state_to_failed)
 from airflow.models import XCom, DagRun
 from airflow.models.connection import Connection
+from airflow.models.pool import Pool
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, SCHEDULER_DEPS
 from airflow.utils import timezone
 from airflow.utils.dates import infer_time_unit, scale_time_units
@@ -1961,7 +1962,7 @@ class ConnectionModelView(AirflowModelView):
 class PoolModelView(AirflowModelView):
     route_base = '/pool'
 
-    datamodel = AirflowModelView.CustomSQLAInterface(models.Pool)
+    datamodel = AirflowModelView.CustomSQLAInterface(Pool)
 
     base_permissions = ['can_add', 'can_list', 'can_edit', 'can_delete']
 

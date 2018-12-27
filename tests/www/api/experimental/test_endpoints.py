@@ -24,7 +24,8 @@ from urllib.parse import quote_plus
 
 from airflow import configuration
 from airflow.api.common.experimental.trigger_dag import trigger_dag
-from airflow.models import DagBag, DagModel, DagRun, Pool, TaskInstance
+from airflow.models import DagBag, DagModel, DagRun, TaskInstance
+from airflow.models.pool import Pool
 from airflow.settings import Session
 from airflow.utils.timezone import datetime, utcnow
 from airflow.www import app as application

@@ -49,6 +49,7 @@ from airflow.models import Variable
 from airflow import jobs, models, DAG, utils, macros, settings, exceptions
 from airflow.models import BaseOperator
 from airflow.models.connection import Connection
+from airflow.models.pool import Pool
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.check_operator import CheckOperator, ValueCheckOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
@@ -1090,7 +1091,7 @@ class CliTests(unittest.TestCase):
         if session is None:
             session = Session()
 
-        session.query(models.Pool).delete()
+        session.query(Pool).delete()
         session.query(models.Variable).delete()
         session.commit()
         session.close()
@@ -1527,7 +1528,7 @@ class CliTests(unittest.TestCase):
 
     def test_pool_create(self):
         cli.pool(self.parser.parse_args(['pool', '-s', 'foo', '1', 'test']))
-        self.assertEqual(self.session.query(models.Pool).count(), 1)
+        self.assertEqual(self.session.query(Pool).count(), 1)
 
     def test_pool_get(self):
         cli.pool(self.parser.parse_args(['pool', '-s', 'foo', '1', 'test']))
@@ -1539,7 +1540,7 @@ class CliTests(unittest.TestCase):
     def test_pool_delete(self):
         cli.pool(self.parser.parse_args(['pool', '-s', 'foo', '1', 'test']))
         cli.pool(self.parser.parse_args(['pool', '-x', 'foo']))
-        self.assertEqual(self.session.query(models.Pool).count(), 0)
+        self.assertEqual(self.session.query(Pool).count(), 0)
 
     def test_pool_no_args(self):
         try:
