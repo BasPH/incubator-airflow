@@ -38,6 +38,7 @@ from airflow import models, settings
 from airflow.config_templates.airflow_local_settings import DEFAULT_LOGGING_CONFIG
 from airflow.models import DAG, DagRun, TaskInstance
 from airflow.models.connection import Connection
+from airflow.models.variable import Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.utils import dates, timezone
@@ -141,7 +142,7 @@ class TestVariableModelView(TestBase):
         }
 
     def tearDown(self):
-        self.clear_table(models.Variable)
+        self.clear_table(Variable)
         super(TestVariableModelView, self).tearDown()
 
     def test_can_handle_error_on_decrypt(self):
@@ -152,7 +153,7 @@ class TestVariableModelView(TestBase):
                                 follow_redirects=True)
 
         # update the variable with a wrong value, given that is encrypted
-        Var = models.Variable
+        Var = Variable
         (self.session.query(Var)
             .filter(Var.key == self.variable['key'])
             .update({
@@ -180,9 +181,9 @@ class TestVariableModelView(TestBase):
     def test_import_variables_failed(self):
         content = '{"str_key": "str_value"}'
 
-        with mock.patch('airflow.models.Variable.set') as set_mock:
+        with mock.patch('airflow.models.variable.Variable.set') as set_mock:
             set_mock.side_effect = UnicodeEncodeError
-            self.assertEqual(self.session.query(models.Variable).count(), 0)
+            self.assertEqual(self.session.query(Variable).count(), 0)
 
             try:
                 # python 3+
@@ -197,7 +198,7 @@ class TestVariableModelView(TestBase):
             self.check_content_in_response('1 variable(s) failed to be updated.', resp)
 
     def test_import_variables_success(self):
-        self.assertEqual(self.session.query(models.Variable).count(), 0)
+        self.assertEqual(self.session.query(Variable).count(), 0)
 
         content = ('{"str_key": "str_value", "int_key": 60,'
                    '"list_key": [1, 2], "dict_key": {"k_a": 2, "k_b": 3}}')

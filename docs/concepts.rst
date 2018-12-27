@@ -470,7 +470,7 @@ accessible and modifiable through the UI.
 
 .. code:: python
 
-    from airflow.models import Variable
+    from airflow.models.variable import Variable
     foo = Variable.get("foo")
     bar = Variable.get("bar", deserialize_json=True)
 

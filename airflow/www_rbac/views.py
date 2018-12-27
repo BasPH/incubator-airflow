@@ -56,6 +56,7 @@ from airflow.api.common.experimental.mark_tasks import (set_dag_run_state_to_suc
                                                         set_dag_run_state_to_failed)
 from airflow.models import XCom, DagRun
 from airflow.models.connection import Connection
+from airflow.models.variable import Variable
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, SCHEDULER_DEPS
 from airflow.utils import timezone
 from airflow.utils.dates import infer_time_unit, scale_time_units
@@ -2023,7 +2024,7 @@ class VariableModelView(AirflowModelView):
 
     list_template = 'airflow/variable_list.html'
 
-    datamodel = AirflowModelView.CustomSQLAInterface(models.Variable)
+    datamodel = AirflowModelView.CustomSQLAInterface(Variable)
 
     base_permissions = ['can_add', 'can_list', 'can_edit', 'can_delete', 'can_varimport']
 
@@ -2094,7 +2095,7 @@ class VariableModelView(AirflowModelView):
             suc_count = fail_count = 0
             for k, v in d.items():
                 try:
-                    models.Variable.set(k, v, serialize_json=isinstance(v, dict))
+                    Variable.set(k, v, serialize_json=isinstance(v, dict))
                 except Exception as e:
                     logging.info('Variable import failed: {}'.format(repr(e)))
                     fail_count += 1

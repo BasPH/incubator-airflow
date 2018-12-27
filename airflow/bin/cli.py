@@ -55,9 +55,10 @@ from airflow import jobs, settings
 from airflow import configuration as conf
 from airflow.exceptions import AirflowException, AirflowWebServerTimeout
 from airflow.executors import GetDefaultExecutor
-from airflow.models import DagModel, DagBag, TaskInstance, DagRun, Variable, DagStat, DAG
+from airflow.models import DagModel, DagBag, TaskInstance, DagRun, DagStat, DAG
 from airflow.models.connection import Connection
 from airflow.models.dagpickle import DagPickle
+from airflow.models.variable import Variable
 from airflow.ti_deps.dep_context import (DepContext, SCHEDULER_DEPS)
 from airflow.utils import cli as cli_utils
 from airflow.utils import db as db_utils

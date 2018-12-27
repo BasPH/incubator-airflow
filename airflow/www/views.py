@@ -67,9 +67,9 @@ from airflow.api.common.experimental.mark_tasks import (set_dag_run_state_to_run
                                                         set_dag_run_state_to_success,
                                                         set_dag_run_state_to_failed)
 from airflow.exceptions import AirflowException
-from airflow.models import BaseOperator
-from airflow.models import XCom, DagRun
+from airflow.models import BaseOperator, XCom, DagRun
 from airflow.models.connection import Connection
+from airflow.models.variable import Variable
 from airflow.operators.subdag_operator import SubDagOperator
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, SCHEDULER_DEPS
 from airflow.utils import timezone
@@ -2024,7 +2024,7 @@ class Airflow(BaseView):
                 data = request.json
                 if data:
                     with create_session() as session:
-                        var = models.Variable(key=form, val=json.dumps(data))
+                        var = Variable(key=form, val=json.dumps(data))
                         session.add(var)
                         session.commit()
                 return ""
@@ -2050,7 +2050,7 @@ class Airflow(BaseView):
             suc_count = fail_count = 0
             for k, v in d.items():
                 try:
-                    models.Variable.set(k, v, serialize_json=isinstance(v, dict))
+                    Variable.set(k, v, serialize_json=isinstance(v, dict))
                 except Exception as e:
                     logging.info('Variable import failed: {}'.format(repr(e)))
                     fail_count += 1
@@ -2590,7 +2590,7 @@ class VariableView(wwwutils.DataProfilingMixin, AirflowModelView):
     @action('varexport', 'Export', None)
     @provide_session
     def action_varexport(self, ids, session=None):
-        V = models.Variable
+        V = Variable
         qry = session.query(V).filter(V.id.in_(ids)).all()
 
         var_dict = {}

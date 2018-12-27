@@ -34,6 +34,7 @@ from werkzeug.test import Client
 from airflow import models, configuration
 from airflow.config_templates.airflow_local_settings import DEFAULT_LOGGING_CONFIG
 from airflow.models import DAG, DagRun, TaskInstance
+from airflow.models.variable import Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.utils.timezone import datetime
@@ -110,7 +111,7 @@ class TestVariableView(unittest.TestCase):
     def setUpClass(cls):
         super(TestVariableView, cls).setUpClass()
         session = Session()
-        session.query(models.Variable).delete()
+        session.query(Variable).delete()
         session.commit()
         session.close()
 
@@ -128,7 +129,7 @@ class TestVariableView(unittest.TestCase):
         }
 
     def tearDown(self):
-        self.session.query(models.Variable).delete()
+        self.session.query(Variable).delete()
         self.session.commit()
         self.session.close()
         super(TestVariableView, self).tearDown()
@@ -143,7 +144,7 @@ class TestVariableView(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         # update the variable with a wrong value, given that is encrypted
-        Var = models.Variable
+        Var = Variable
         (self.session.query(Var)
             .filter(Var.key == self.variable['key'])
             .update({
@@ -155,7 +156,7 @@ class TestVariableView(unittest.TestCase):
         # label for the variable
         response = self.app.get('/admin/variable', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.session.query(models.Variable).count(), 1)
+        self.assertEqual(self.session.query(Variable).count(), 1)
 
     def test_xss_prevention(self):
         xss = "/admin/airflow/variables/asdf<img%20src=''%20onerror='alert(1);'>"
@@ -450,7 +451,7 @@ class TestVarImportView(unittest.TestCase):
         super(TestVarImportView, cls).tearDownClass()
 
     def test_import_variable_fail(self):
-        with mock.patch('airflow.models.Variable.set') as set_mock:
+        with mock.patch('airflow.models.variable.Variable.set') as set_mock:
             set_mock.side_effect = UnicodeEncodeError
             content = '{"fail_key": "fail_val"}'
 
@@ -467,7 +468,7 @@ class TestVarImportView(unittest.TestCase):
             )
             self.assertEqual(response.status_code, 200)
             session = Session()
-            db_dict = {x.key: x.get_val() for x in session.query(models.Variable).all()}
+            db_dict = {x.key: x.get_val() for x in session.query(Variable).all()}
             session.close()
             self.assertNotIn('fail_key', db_dict)
 
@@ -488,7 +489,7 @@ class TestVarImportView(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         session = Session()
         # Extract values from Variable
-        db_dict = {x.key: x.get_val() for x in session.query(models.Variable).all()}
+        db_dict = {x.key: x.get_val() for x in session.query(Variable).all()}
         session.close()
         self.assertIn('str_key', db_dict)
         self.assertIn('int_key', db_dict)
