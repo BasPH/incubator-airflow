@@ -34,7 +34,6 @@ import sys
 
 # flake8: noqa: F401
 from airflow import settings, configuration as conf
-from airflow.models import DAG
 from flask_admin import BaseView
 from importlib import import_module
 from airflow.exceptions import AirflowException
