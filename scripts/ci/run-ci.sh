@@ -57,6 +57,7 @@ else
                      --with-ignore-docstrings \
                      --rednose \
                      --with-timer \
+                     --processes=-1 \
                      -v \
                      --logging-level=DEBUG
 fi
