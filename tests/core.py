@@ -49,7 +49,7 @@ from airflow.models import Variable
 from airflow import jobs, models, DAG, utils, macros, settings, exceptions
 from airflow.models import BaseOperator
 from airflow.models.connection import Connection
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.check_operator import CheckOperator, ValueCheckOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator

@@ -36,7 +36,7 @@ from sqlalchemy import Column, String
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from airflow import settings
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.utils.db import provide_session
 from airflow.utils.log.logging_mixin import LoggingMixin
 

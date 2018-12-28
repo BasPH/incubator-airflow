@@ -26,7 +26,7 @@ from flask_oauthlib.client import OAuth
 
 from airflow import configuration
 from airflow.configuration import AirflowConfigException
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.utils.db import provide_session
 from airflow.utils.log.logging_mixin import LoggingMixin
 

@@ -29,7 +29,7 @@ from wtforms.validators import InputRequired
 # and make it possible to spoof the KDC
 import kerberos
 
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.security import utils
 
 from flask import url_for, redirect

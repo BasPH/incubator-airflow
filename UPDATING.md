@@ -96,10 +96,11 @@ This patch changes the `User.superuser` field from a hardcoded boolean to a `Boo
 
 For example, open a Python shell and
 ```python
-from airflow import models, settings
+from airflow import settings
+from airflow.models.users import User
 
 session = settings.Session()
-users = session.query(models.user.User).all()  # [admin, regular_user]
+users = session.query(User).all()  # [admin, regular_user]
 
 users[1].superuser  # False
 

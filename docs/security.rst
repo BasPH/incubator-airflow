@@ -88,9 +88,10 @@ attack. Creating a new user has to be done via a Python REPL on the same machine
     Python 2.7.9 (default, Feb 10 2015, 03:28:08)
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import airflow
-    >>> from airflow import models, settings
+    >>> from airflow import settings
+    >>> from airflow.models.users import User
     >>> from airflow.contrib.auth.backends.password_auth import PasswordUser
-    >>> user = PasswordUser(models.User())
+    >>> user = PasswordUser(User())
     >>> user.username = 'new_user_name'
     >>> user.email = 'new_user_email@example.com'
     >>> user.password = 'set_the_password'

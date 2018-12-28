@@ -30,7 +30,7 @@ from flask_login import login_required, current_user, logout_user  # noqa: F401
 from flask import url_for, redirect
 
 from airflow import settings  # noqa: F401
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.utils.db import provide_session
 
 DEFAULT_USERNAME = 'airflow'

@@ -22,7 +22,7 @@ import unittest
 from backports.configparser import DuplicateSectionError
 
 from airflow import configuration
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.www import app as application
 from airflow.settings import Session
 from airflow.contrib.auth.backends.password_auth import PasswordUser

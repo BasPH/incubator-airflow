@@ -31,7 +31,7 @@ import airflow
 from airflow import configuration as conf
 from airflow import models, LoggingMixin
 from airflow.models.connection import Connection
-from airflow.models.user import User
+from airflow.models.users import User
 from airflow.settings import Session
 
 from airflow.www.blueprints import routes
