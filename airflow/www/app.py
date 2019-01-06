@@ -31,6 +31,7 @@ import airflow
 from airflow import configuration as conf
 from airflow import models, LoggingMixin
 from airflow.models.connection import Connection
+from airflow.models.slamiss import SlaMiss
 from airflow.settings import Session
 
 from airflow.www.blueprints import routes
@@ -93,7 +94,7 @@ def create_app(config=None, testing=False):
             models.KnownEvent,
             Session, name="Known Events", category="Data Profiling"))
         av(vs.SlaMissModelView(
-            models.SlaMiss,
+            SlaMiss,
             Session, name="SLA Misses", category="Browse"))
         av(vs.TaskInstanceModelView(models.TaskInstance,
             Session, name="Task Instances", category="Browse"))

@@ -38,6 +38,7 @@ import six
 import sqlalchemy
 from mock import Mock, patch, MagicMock, PropertyMock
 
+from airflow.models.slamiss import SlaMiss
 from airflow.utils.db import create_session
 from airflow import AirflowException, settings, models
 from airflow import configuration
@@ -2850,11 +2851,11 @@ class SchedulerJobTest(unittest.TestCase):
                                           state='success'))
 
         # Create an SlaMiss where notification was sent, but email was not
-        session.merge(models.SlaMiss(task_id='dummy',
-                                     dag_id='test_sla_miss',
-                                     execution_date=test_start_date,
-                                     email_sent=False,
-                                     notification_sent=True))
+        session.merge(SlaMiss(task_id='dummy',
+                              dag_id='test_sla_miss',
+                              execution_date=test_start_date,
+                              email_sent=False,
+                              notification_sent=True))
 
         # Now call manage_slas and see if the sla_miss callback gets called
         scheduler = SchedulerJob(dag_id='test_sla_miss',
@@ -2887,9 +2888,9 @@ class SchedulerJobTest(unittest.TestCase):
                                           state='Success'))
 
         # Create an SlaMiss where notification was sent, but email was not
-        session.merge(models.SlaMiss(task_id='dummy',
-                                     dag_id='test_sla_miss',
-                                     execution_date=test_start_date))
+        session.merge(SlaMiss(task_id='dummy',
+                              dag_id='test_sla_miss',
+                              execution_date=test_start_date))
 
         # Now call manage_slas and see if the sla_miss callback gets called
         scheduler = SchedulerJob(dag_id='test_sla_miss')
@@ -2929,9 +2930,9 @@ class SchedulerJobTest(unittest.TestCase):
                                           state='Success'))
 
         # Create an SlaMiss where notification was sent, but email was not
-        session.merge(models.SlaMiss(task_id='dummy',
-                                     dag_id='test_sla_miss',
-                                     execution_date=test_start_date))
+        session.merge(SlaMiss(task_id='dummy',
+                              dag_id='test_sla_miss',
+                              execution_date=test_start_date))
 
         scheduler = SchedulerJob(dag_id='test_sla_miss',
                                  num_runs=1)

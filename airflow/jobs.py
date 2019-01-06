@@ -44,6 +44,7 @@ from airflow import executors, models, settings
 from airflow.exceptions import AirflowException
 from airflow.models import DAG, DagRun
 from airflow.models.dagpickle import DagPickle
+from airflow.models.slamiss import SlaMiss
 from airflow.settings import Stats
 from airflow.task.task_runner import get_task_runner
 from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, RUN_DEPS
@@ -652,7 +653,6 @@ class SchedulerJob(BaseJob):
         ).all()
 
         ts = timezone.utcnow()
-        SlaMiss = models.SlaMiss
         for ti in max_tis:
             task = dag.get_task(ti.task_id)
             dttm = ti.execution_date
@@ -661,7 +661,7 @@ class SchedulerJob(BaseJob):
                 while dttm < timezone.utcnow():
                     following_schedule = dag.following_schedule(dttm)
                     if following_schedule + task.sla < timezone.utcnow():
-                        session.merge(models.SlaMiss(
+                        session.merge(SlaMiss(
                             task_id=ti.task_id,
                             dag_id=ti.dag_id,
                             execution_date=dttm,
@@ -1445,6 +1445,8 @@ class SchedulerJob(BaseJob):
                 self.log.info("Created %s", dag_run)
             self._process_task_instances(dag, tis_out)
             self.manage_slas(dag)
+
+        models.DagStat.update([d.dag_id for d in dags])
 
     @provide_session
     def _process_executor_events(self, simple_dag_bag, session=None):
@@ -2321,6 +2323,9 @@ class BackfillJob(BaseJob):
                     ti_status.finished_runs += 1
                     ti_status.active_runs.remove(run)
                     executed_run_dates.append(run.execution_date)
+
+                if run.dag.is_paused:
+                    models.DagStat.update([run.dag_id], session=session)
 
             self._log_progress(ti_status)
 
