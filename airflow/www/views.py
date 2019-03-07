@@ -965,25 +965,26 @@ class Airflow(AirflowBaseView):
     @has_access
     @provide_session
     def blocked(self, session=None):
-        DR = models.DagRun
+        """Select DAG ids with number of currently active and maximum DAG runs."""
         filter_dag_ids = appbuilder.sm.get_accessible_dag_ids()
 
         payload = []
         if filter_dag_ids:
-            dags = (
-                session.query(DR.dag_id, sqla.func.count(DR.id))
-                       .filter(DR.state == State.RUNNING)
-                       .group_by(DR.dag_id)
-
+            dags_active_runs = (
+                session.query(DagRun.dag_id, sqla.func.count(DagRun.id))
+                    .filter(DagRun.state == State.RUNNING)
+                    .group_by(DagRun.dag_id)
             )
             if 'all_dags' not in filter_dag_ids:
-                dags = dags.filter(DR.dag_id.in_(filter_dag_ids))
-            dags = dags.all()
+                dags_active_runs = dags_active_runs.filter(DagRun.dag_id.in_(filter_dag_ids))
+            dags_active_runs = dags_active_runs.all()
 
-            for dag_id, active_dag_runs in dags:
+            for dag_id, active_dag_runs in dags_active_runs:
                 max_active_runs = 0
-                if dag_id in dagbag.dags:
-                    max_active_runs = dagbag.dags[dag_id].max_active_runs
+                dag_model = DagModel.get_dagmodel(dag_id)
+                if dag_model:
+                    max_active_runs = dag_model.get_dag().max_active_runs
+
                 payload.append({
                     'dag_id': dag_id,
                     'active_dag_run': active_dag_runs,
