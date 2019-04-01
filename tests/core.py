@@ -452,7 +452,7 @@ class CoreTest(unittest.TestCase):
     def test_bash_operator_multi_byte_output(self):
         t = BashOperator(
             task_id='test_multi_byte_bash_operator',
-            bash_command=u"echo \u2600",
+            bash_command="echo \u2600",
             dag=self.dag,
             output_encoding='utf-8')
         t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
@@ -615,8 +615,7 @@ class CoreTest(unittest.TestCase):
         Variable.set("a_variable", val['test_value'], serialize_json=True)
 
         def verify_templated_field(context):
-            self.assertEqual(context['ti'].task.some_templated_field,
-                             u'{"foo": "bar"}')
+            self.assertEqual(context['ti'].task.some_templated_field, '{"foo": "bar"}')
 
         t = OperatorSubclass(
             task_id='test_complex_template',
@@ -970,14 +969,14 @@ class CoreTest(unittest.TestCase):
         if six.PY3:
             write = r'sys.stdout.buffer.write("\u1000foo".encode("utf8"))'
         else:
-            write = r'sys.stdout.write(u"\u1000foo".encode("utf8"))'
+            write = r'sys.stdout.write("\u1000foo".encode("utf8"))'
 
         cmd = 'import sys; {0}; sys.stdout.flush()'.format(write)
 
         self.assertEqual(run_command("python -c '{0}'".format(cmd)),
-                         u'\u1000foo' if six.PY3 else 'foo')
+                         '\u1000foo' if six.PY3 else 'foo')
 
-        self.assertEqual(run_command('echo "foo bar"'), u'foo bar\n')
+        self.assertEqual(run_command('echo "foo bar"'), 'foo bar\n')
         self.assertRaises(AirflowConfigException, run_command, 'bash -c "exit 1"')
 
     def test_trigger_dagrun_with_execution_date(self):
@@ -1996,7 +1995,7 @@ class FakeSnakeBiteClient(object):
             return []
         elif path[0] == '/datadirectory/datafile':
             return [{
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2004,12 +2003,12 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 0,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/datafile'
             }]
         elif path[0] == '/datadirectory/empty_directory' and include_toplevel:
             return [{
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 493,
                 'file_type': 'd',
                 'access_time': 0,
@@ -2017,12 +2016,12 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481132141540,
                 'length': 0,
                 'blocksize': 0,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/empty_directory'
             }]
         elif path[0] == '/datadirectory/not_empty_directory' and include_toplevel:
             return [{
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 493,
                 'file_type': 'd',
                 'access_time': 0,
@@ -2030,10 +2029,10 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481132141540,
                 'length': 0,
                 'blocksize': 0,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/empty_directory'
             }, {
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2041,12 +2040,12 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 0,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/not_empty_directory/test_file'
             }]
         elif path[0] == '/datadirectory/not_empty_directory':
             return [{
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2054,24 +2053,24 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 0,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/not_empty_directory/test_file'
             }]
         elif path[0] == '/datadirectory/not_existing_file_or_directory':
             raise FakeSnakeBiteClientException
         elif path[0] == '/datadirectory/regex_dir':
             return [{
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
                 'block_replication': 3,
                 'modification_time': 1481122343862, 'length': 12582912,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/regex_dir/test1file'
             }, {
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2079,10 +2078,10 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 12582912,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/regex_dir/test2file'
             }, {
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2090,10 +2089,10 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 12582912,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/regex_dir/test3file'
             }, {
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2101,10 +2100,10 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 12582912,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/regex_dir/copying_file_1.txt._COPYING_'
             }, {
-                'group': u'supergroup',
+                'group': 'supergroup',
                 'permission': 420,
                 'file_type': 'f',
                 'access_time': 1481122343796,
@@ -2112,7 +2111,7 @@ class FakeSnakeBiteClient(object):
                 'modification_time': 1481122343862,
                 'length': 12582912,
                 'blocksize': 134217728,
-                'owner': u'hdfs',
+                'owner': 'hdfs',
                 'path': '/datadirectory/regex_dir/copying_file_3.txt.sftp'
             }]
         else:
@@ -2313,8 +2312,8 @@ class EmailSmtpTest(unittest.TestCase):
         self.assertEqual('subject', msg['Subject'])
         self.assertEqual(configuration.conf.get('smtp', 'SMTP_MAIL_FROM'), msg['From'])
         self.assertEqual(2, len(msg.get_payload()))
-        filename = u'attachment; filename="' + os.path.basename(attachment.name) + '"'
-        self.assertEqual(filename, msg.get_payload()[-1].get(u'Content-Disposition'))
+        filename = 'attachment; filename="' + os.path.basename(attachment.name) + '"'
+        self.assertEqual(filename, msg.get_payload()[-1].get('Content-Disposition'))
         mimeapp = MIMEApplication('attachment')
         self.assertEqual(mimeapp.get_payload(), msg.get_payload()[-1].get_payload())
 
@@ -2341,8 +2340,8 @@ class EmailSmtpTest(unittest.TestCase):
         self.assertEqual('subject', msg['Subject'])
         self.assertEqual(configuration.conf.get('smtp', 'SMTP_MAIL_FROM'), msg['From'])
         self.assertEqual(2, len(msg.get_payload()))
-        self.assertEqual(u'attachment; filename="' + os.path.basename(attachment.name) + '"',
-                         msg.get_payload()[-1].get(u'Content-Disposition'))
+        self.assertEqual('attachment; filename="' + os.path.basename(attachment.name) + '"',
+                         msg.get_payload()[-1].get('Content-Disposition'))
         mimeapp = MIMEApplication('attachment')
         self.assertEqual(mimeapp.get_payload(), msg.get_payload()[-1].get_payload())
 
