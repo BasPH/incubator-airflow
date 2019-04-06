@@ -49,7 +49,6 @@ from airflow.exceptions import AirflowDagCycleException, AirflowSkipException
 from airflow.jobs import BackfillJob
 from airflow.models import DAG, TaskInstance as TI, DagBag
 from airflow.models import DagModel, DagRun
-from airflow.models import State as ST
 from airflow.models import Variable
 from airflow.models import clear_task_instances
 from airflow.models.taskfail import TaskFail
@@ -2513,8 +2512,8 @@ class TaskInstanceTest(unittest.TestCase):
         #
         ['all_success', 5, 0, 0, 0, 0, True, None, True],
         ['all_success', 2, 0, 0, 0, 0, True, None, False],
-        ['all_success', 2, 0, 1, 0, 0, True, ST.UPSTREAM_FAILED, False],
-        ['all_success', 2, 1, 0, 0, 0, True, ST.SKIPPED, False],
+        ['all_success', 2, 0, 1, 0, 0, True, State.UPSTREAM_FAILED, False],
+        ['all_success', 2, 1, 0, 0, 0, True, State.SKIPPED, False],
         #
         # Tests for one_success
         #
@@ -2525,11 +2524,11 @@ class TaskInstanceTest(unittest.TestCase):
         #
         # Tests for all_failed
         #
-        ['all_failed', 5, 0, 0, 0, 5, True, ST.SKIPPED, False],
+        ['all_failed', 5, 0, 0, 0, 5, True, State.SKIPPED, False],
         ['all_failed', 0, 0, 5, 0, 5, True, None, True],
-        ['all_failed', 2, 0, 0, 0, 2, True, ST.SKIPPED, False],
-        ['all_failed', 2, 0, 1, 0, 3, True, ST.SKIPPED, False],
-        ['all_failed', 2, 1, 0, 0, 3, True, ST.SKIPPED, False],
+        ['all_failed', 2, 0, 0, 0, 2, True, State.SKIPPED, False],
+        ['all_failed', 2, 0, 1, 0, 3, True, State.SKIPPED, False],
+        ['all_failed', 2, 1, 0, 0, 3, True, State.SKIPPED, False],
         #
         # Tests for one_failed
         #
@@ -2537,7 +2536,7 @@ class TaskInstanceTest(unittest.TestCase):
         ['one_failed', 2, 0, 0, 0, 0, True, None, False],
         ['one_failed', 2, 0, 1, 0, 0, True, None, True],
         ['one_failed', 2, 1, 0, 0, 3, True, None, False],
-        ['one_failed', 2, 3, 0, 0, 5, True, ST.SKIPPED, False],
+        ['one_failed', 2, 3, 0, 0, 5, True, State.SKIPPED, False],
         #
         # Tests for done
         #
