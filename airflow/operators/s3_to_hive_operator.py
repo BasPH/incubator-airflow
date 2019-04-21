@@ -19,8 +19,7 @@
 
 from builtins import next
 from builtins import zip
-from tempfile import NamedTemporaryFile
-from airflow.utils.file import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 import gzip
 import bz2
 import tempfile
