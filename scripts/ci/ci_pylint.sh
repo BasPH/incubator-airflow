@@ -19,4 +19,11 @@
 
 set -eo pipefail
 
-git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
+if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
+then
+    # If running in Travis
+    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
+else
+    # If running locally
+    git lint
+fi
