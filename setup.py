@@ -266,6 +266,7 @@ devel = [
     'nose-timer',
     'parameterized',
     'paramiko',
+    'pylint~=2.3.1',
     'pysftp',
     'pywinrm',
     'qds-sdk>=1.9.6',
