@@ -519,6 +519,8 @@ class BaseOperator(LoggingMixin):
 
     @property
     def dag_id(self):
+        self.bla = "test"
+
         if self.has_dag():
             return self.dag.dag_id
         else:
