@@ -19,7 +19,10 @@
 
 set -xeuo pipefail
 
-echo "Current dir = ${pwd}"
+# Go to project root dir
+env
+echo "current dir = $(pwd)"
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${MY_DIR}/../../
+
 find . -name "*.py" | xargs pylint --output-format=colorized
