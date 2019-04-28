@@ -17,22 +17,6 @@
 # limitations under the License.
 #
 
-set -xeo pipefail
+set -eo pipefail
 
-# Go to project root dir
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd ${SCRIPT_DIR}/../../
-
-# Apply Pylint only on changed Python files
-if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
-then
-    CHANGED_FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
-else
-    CHANGED_FILES=$(git diff --name-only master)
-fi
-
-echo $CHANGED_FILES
-echo "============================"
-echo "CHANGED FILES = " "${CHANGED_FILES[*]}"
-
-echo "${CHANGED_FILES[*]}" | grep *.py | xargs pylint --output-format=colorized | tee .pylint.log
+git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
