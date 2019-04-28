@@ -153,7 +153,19 @@ disable=print-statement,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
-        comprehension-escape
+        comprehension-escape,
+        bad-continuation,  # Throws incorrect errors, see https://github.com/ambv/black/issues/48
+        duplicate-code,
+        abstract-method,
+        keyword-arg-before-vararg,
+        no-self-use,  # http://pylint-messages.wikidot.com/messages:r0201
+        no-else-return,  # deemed unnecessary
+        broad-except  # deemed unnecessary
+        pointless-statement,  # ignored because it's raised on bitshift operation not returning any object
+        no-else-raise,  # deemed unnecessary
+        too-many-format-args,  # Pylint fails on multiline string format
+        cell-var-from-loop  # Raises spurious errors
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -306,7 +318,7 @@ callbacks=cb_,
 
 # A regular expression matching the name of dummy variables (i.e. expected to
 # not be used).
-dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_|args|kwargs
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore.
@@ -336,7 +348,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=110
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -389,10 +401,7 @@ attr-naming-style=snake_case
 #attr-rgx=
 
 # Bad variable names which should always be refused, separated by a comma.
-bad-names=foo,
-          bar,
-          baz,
-          toto,
+bad-names=toto,
           tutu,
           tata
 
@@ -411,22 +420,24 @@ class-naming-style=PascalCase
 #class-rgx=
 
 # Naming style matching correct constant names.
-const-naming-style=UPPER_CASE
+# const-naming-style=UPPER_CASE
 
-# Regular expression matching correct constant names. Overrides const-naming-
-# style.
-#const-rgx=
+# Regular expression matching correct constant names. Overrides const-naming-style.
+# BasPH: The Pylint constant regex was adjusted to support both lower- and upper-snakecase constants, and 1 char constants
+#        See https://regex101.com/r/Ir2hEX/1
+const-rgx=(([a-zA-Z_][a-zA-Z0-9_]*)|(_[a-zA-Z0-9_]*)|(__[a-zA-Z][a-zA-Z0-9_]*__))$
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
 docstring-min-length=-1
 
 # Naming style matching correct function names.
-function-naming-style=snake_case
+# function-naming-style=snake_case
 
-# Regular expression matching correct function names. Overrides function-
-# naming-style.
-#function-rgx=
+# Regular expression matching correct function names. Overrides function-naming-style.
+# BasPH: Adjusted Pylint regex to support single chars functions and more than 1 uppercase char
+#        See https://regex101.com/r/ruXHvq/1
+function-rgx=[a-z]+(\_[a-zA-Z0-9]+)*$
 
 # Good variable names which should always be accepted, separated by a comma.
 good-names=i,
@@ -474,11 +485,12 @@ no-docstring-rgx=^_
 property-classes=abc.abstractproperty
 
 # Naming style matching correct variable names.
-variable-naming-style=snake_case
+# variable-naming-style=snake_case
 
-# Regular expression matching correct variable names. Overrides variable-
-# naming-style.
-#variable-rgx=
+# Regular expression matching correct variable names. Overrides variable-naming-style.
+# BasPH: The Pylint variable regex was adjusted to support both lower- and upper-snakecase variables, 1 char variables, and variables starting with a number
+#        See https://regex101.com/r/GOJ4af/1
+variable-rgx=(([a-zA-Z0-9_][a-zA-Z0-9_]*)|(_[a-zA-Z0-9_]*)|(__[a-zA-Z0-9][a-zA-Z0-9_]*__))$
 
 
 [IMPORTS]
@@ -539,34 +551,40 @@ valid-metaclass-classmethod-first-arg=cls
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=5
+# BasPH: choose 10 because this was 80% of the sorted list of number of arguments above 5 (Pylint default)
+max-args=10
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+# BasPH: choose 15 because this was 80% of the sorted list of number of attributes above 7 (Pylint default)
+max-attributes=15
 
 # Maximum number of boolean expressions in an if statement.
 max-bool-expr=5
 
 # Maximum number of branch for function / method body.
-max-branches=12
+# BasPH: choose 22 because this was 80% of the sorted list of number of attributes above 12 (Pylint default)
+max-branches=22
 
 # Maximum number of locals for function / method body.
-max-locals=15
+# BasPH: choose 24 because this was 80% of the sorted list of number of locals above 15 (Pylint default)
+max-locals=24
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
 
 # Maximum number of public methods for a class (see R0904).
-max-public-methods=20
+# BasPH: choose 27 because this was 50% of the sorted list of 30 number of public methods above 20 (Pylint default)
+max-public-methods=27
 
 # Maximum number of return / yield for function / method body.
 max-returns=6
 
 # Maximum number of statements in function / method body.
+# BasPH: choose 69 because this was 80% of the sorted list of number of statements above 50 (Pylint default)
 max-statements=50
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=2
+min-public-methods=0
 
 
 [EXCEPTIONS]
