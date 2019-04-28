@@ -20,9 +20,8 @@
 set -xeuo pipefail
 
 # Go to project root dir
-env
-echo "current dir = $(pwd)"
-MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd ${MY_DIR}/../../
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd ${SCRIPT_DIR}/../../
 
-find . -name "*.py" | xargs pylint --output-format=colorized
+# Pylint only on changed files compared to master
+git diff --name-only master | grep *.py | xargs pylint --output-format=colorized
