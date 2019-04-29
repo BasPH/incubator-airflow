@@ -19,6 +19,19 @@
 
 set -eo pipefail
 
+# TODO when Airflow is fully Pylint compatible, remove git-lint and run pylint on complete changed files
+#if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
+#then
+#    # Travis provides this environment variable with changed files
+#    CHANGED_FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
+#else
+#    # If running locally, we simply check for changed files against master
+#    CHANGED_FILES=$(git diff --name-only master)
+#fi
+#
+#echo "${CHANGED_FILES[*]}" | grep ".*\.py$" | xargs pylint --output-format=colorized
+
+# TODO Using git-lint is an intermediate solution only for integrating Pylint!
 if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
 then
     # If running in Travis
