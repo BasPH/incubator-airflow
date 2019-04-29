@@ -257,6 +257,7 @@ devel = [
     'click==6.7',
     'flake8>=3.6.0',
     'freezegun',
+    'git-lint~=0.1.2',
     'jira',
     'mock;python_version<"3.3"',
     'mongomock',
