@@ -160,7 +160,6 @@ disable=print-statement,
         keyword-arg-before-vararg,
         no-self-use,  # http://pylint-messages.wikidot.com/messages:r0201
         no-else-return,  # deemed unnecessary
-        broad-except  # deemed unnecessary
         pointless-statement,  # ignored because it's raised on bitshift operation not returning any object
         no-else-raise,  # deemed unnecessary
         too-many-format-args,  # Pylint fails on multiline string format
