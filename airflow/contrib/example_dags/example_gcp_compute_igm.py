@@ -39,6 +39,8 @@ Variables for update template in Group Manager:
 * DESTINATION_TEMPLATE_URL - url of the new template to set in the Instance Group Manager
 """
 
+# pylint: disable=pointless-statement
+
 import os
 
 import airflow

@@ -22,6 +22,9 @@ Example Airflow DAG that translates text in Google Cloud Translate
 service in the Google Cloud Platform.
 
 """
+
+# pylint: disable=pointless-statement
+
 import airflow
 from airflow import models
 

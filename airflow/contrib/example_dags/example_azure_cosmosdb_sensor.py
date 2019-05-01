@@ -27,6 +27,8 @@ You can trigger this manually with `airflow trigger_dag example_cosmosdb_sensor`
 this example.*
 """
 
+# pylint: disable=pointless-statement
+
 from airflow import DAG
 from airflow.contrib.sensors.azure_cosmos_sensor import AzureCosmosDocumentSensor
 from airflow.contrib.operators.azure_cosmos_operator import AzureCosmosInsertDocumentOperator

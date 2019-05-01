@@ -17,6 +17,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# pylint: disable=pointless-statement
+
 from datetime import timedelta
 
 import airflow

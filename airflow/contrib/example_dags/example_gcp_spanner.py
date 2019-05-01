@@ -33,6 +33,8 @@ This DAG relies on the following environment variables
   Must be unique per project and between 4 and 30 characters in length.
 """
 
+# pylint: disable=pointless-statement
+
 import os
 
 import airflow

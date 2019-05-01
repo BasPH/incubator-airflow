@@ -17,6 +17,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# pylint: disable=pointless-statement
+
 from typing import Any
 
 import airflow
