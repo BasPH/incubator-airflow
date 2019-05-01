@@ -21,12 +21,10 @@ set -exo pipefail
 
 # TODO When Airflow is fully Pylint compatible, remove git-lint and run pylint on complete changed files
 # TODO Using git-lint is an intermediate solution only for integrating Pylint!
-env
-if [[ ! -z $TRAVIS_BRANCH ]]
+if [[ ! -z TRAVIS_COMMIT_RANGE ]]
 then
     # If running in Travis
-    OLDEST_COMMIT_NOT_ON_MASTER=$(git log ${TRAVIS_BRANCH} --not master --no-merges --format="%H" | tail -1)
-    git reset --soft ${OLDEST_COMMIT_NOT_ON_MASTER} && git lint
+    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
 else
     # If running locally
     CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
