@@ -17,14 +17,15 @@
 # limitations under the License.
 #
 
-set -eo pipefail
+set -exo pipefail
 
 # TODO When Airflow is fully Pylint compatible, remove git-lint and run pylint on complete changed files
 # TODO Using git-lint is an intermediate solution only for integrating Pylint!
+env
 if [[ ! -z $TRAVIS_BRANCH ]]
 then
     # If running in Travis
-    OLDEST_COMMIT_NOT_ON_MASTER=$(git log $TRAVIS_BRANCH --not master --no-merges --format="%H" | tail -1)
+    OLDEST_COMMIT_NOT_ON_MASTER=$(git log ${TRAVIS_BRANCH} --not master --no-merges --format="%H" | tail -1)
     git reset --soft ${OLDEST_COMMIT_NOT_ON_MASTER} && git lint
 else
     # If running locally
