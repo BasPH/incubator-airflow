@@ -50,7 +50,7 @@ for filename in py_files_to_check:
     try:
         with open(os.devnull, "w") as devnull:
             blame_lines = subprocess.check_output(git_blame_cmd, stderr=devnull).decode("utf-8").splitlines()
-    except Exception as e:
+    except Exception:
         # Raised if new file -> no history. Set linenumbers to None.
         filename_lines[filename] = None
         continue

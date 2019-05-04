@@ -146,6 +146,3 @@ class BashOperator(BaseOperator):
     def on_kill(self):
         self.log.info('Sending SIGTERM signal to bash process group')
         os.killpg(os.getpgid(self.sub_process.pid), signal.SIGTERM)
-
-class Test(object):
-    async = "bla"
