@@ -57,7 +57,7 @@ jobs:
       script: docs/build.sh
     - name: Pylint
       stage: pre-test
-      install: pip install pylint~=2.3.1 git-lint~=0.1.2
+      install: pip install pylint~=2.3.1
       script: scripts/ci/ci_pylint.sh
 cache:
   directories:

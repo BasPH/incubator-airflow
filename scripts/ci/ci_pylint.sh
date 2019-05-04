@@ -25,10 +25,10 @@ set -ex
 if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
 then
     # If running in Travis, compare commit range (with Airflow PR conventions, this should always be a single commit)
-    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
+    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && python $(dirname ${BASH_SOURCE[0]})/ci_pylint.py
 else
     # If running locally, compare from oldest non-master-commit
     CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
     OLDEST_COMMIT_NOT_ON_MASTER=$(git log ${CURRENT_BRANCH} --not master --no-merges --format="%H" | tail -1)
-    git reset --soft ${OLDEST_COMMIT_NOT_ON_MASTER} && git lint && git reset HEAD@{1}
+    git reset --soft ${OLDEST_COMMIT_NOT_ON_MASTER} && python $(dirname ${BASH_SOURCE[0]})/ci_pylint.py || git reset HEAD@{1}
 fi
