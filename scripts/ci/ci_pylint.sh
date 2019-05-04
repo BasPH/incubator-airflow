@@ -17,9 +17,18 @@
 # limitations under the License.
 #
 
-set -xeuo pipefail
+set -ex
 
-echo "Current dir = ${pwd}"
-MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd ${MY_DIR}/../../
-find . -name "*.py" | xargs pylint --output-format=colorized
+# TODO When Airflow is fully Pylint compatible, remove git-lint and run pylint on complete changed files
+# Using git-lint is an intermediate solution only for integrating Pylint!
+# TODO After full Airflow-Pylint compatibility, add if-clause checking if .pylintrc was edited and if so, run pylint on complete project instead of changed files
+if [[ ! -z $TRAVIS_COMMIT_RANGE ]]
+then
+    # If running in Travis, compare commit range (with Airflow PR conventions, this should always be a single commit)
+    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} && git lint
+else
+    # If running locally, compare from oldest non-master-commit
+    CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+    OLDEST_COMMIT_NOT_ON_MASTER=$(git log ${CURRENT_BRANCH} --not master --no-merges --format="%H" | tail -1)
+    git reset --soft ${OLDEST_COMMIT_NOT_ON_MASTER} && git lint && git reset HEAD@{1}
+fi

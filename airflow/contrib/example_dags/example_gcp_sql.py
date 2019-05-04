@@ -28,6 +28,8 @@ https://airflow.apache.org/concepts.html#variables
 * DB_NAME - Name of the database inside a Cloud SQL instance.
 """
 
+# pylint: disable=pointless-statement
+
 import os
 from urllib.parse import urlsplit
 

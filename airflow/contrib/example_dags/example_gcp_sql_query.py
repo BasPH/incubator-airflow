@@ -38,6 +38,8 @@ This DAG relies on the following OS environment variables
 * GCSQL_MYSQL_PUBLIC_PORT - Port of the mysql database
 """
 
+# pylint: disable=pointless-statement
+
 import os
 import subprocess
 from os.path import expanduser

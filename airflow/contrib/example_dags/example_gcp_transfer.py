@@ -38,6 +38,9 @@ This DAG relies on the following OS environment variables
   Look at documentation of :class:`~airflow.operators.sensors.BaseSensorOperator` for more information
 
 """
+
+# pylint: disable=pointless-statement
+
 import os
 from datetime import datetime, timedelta
 from typing import Any, Dict

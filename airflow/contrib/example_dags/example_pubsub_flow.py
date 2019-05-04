@@ -25,6 +25,8 @@ NOTE: project_id must be updated to a GCP project ID accessible with the
       Google Default Credentials on the machine running the workflow
 """
 
+# pylint: disable=pointless-statement
+
 from base64 import b64encode
 
 import datetime

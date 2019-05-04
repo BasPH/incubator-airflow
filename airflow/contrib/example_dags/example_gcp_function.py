@@ -41,6 +41,8 @@ https://airflow.apache.org/concepts.html#variables
 
 """
 
+# pylint: disable=pointless-statement
+
 import os
 
 from airflow import models

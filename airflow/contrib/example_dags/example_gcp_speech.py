@@ -26,6 +26,8 @@ https://airflow.apache.org/concepts.html#variables
 * GCP_SPEECH_TEST_BUCKET - Name of the bucket in which the output file should be stored.
 """
 
+# pylint: disable=pointless-statement
+
 import os
 
 from airflow.utils import dates
