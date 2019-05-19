@@ -33,7 +33,7 @@ from builtins import str
 
 from pygments import highlight, lexers
 from pygments.formatters import HtmlFormatter
-from flask import request, Response, Markup, url_for
+from flask import Response, Markup, url_for
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 import flask_appbuilder.models.sqla.filters as fab_sqlafilters
 import sqlalchemy as sqla
@@ -216,15 +216,6 @@ def open_maybe_zipped(f, mode='r'):
         return zipfile.ZipFile(archive, mode=mode).open(filename)
     else:
         return io.open(f, mode=mode)
-
-
-def make_cache_key(*args, **kwargs):
-    """
-    Used by cache to get a unique key per URL
-    """
-    path = request.path
-    args = str(hash(frozenset(request.args.items())))
-    return (path + args).encode('ascii', 'ignore')
 
 
 def task_instance_link(attr):

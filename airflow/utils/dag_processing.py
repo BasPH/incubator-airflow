@@ -1049,19 +1049,6 @@ class DagFileProcessorManager(LoggingMixin):
         """
         return [x.pid for x in self._processors.values()]
 
-    def get_runtime(self, file_path):
-        """
-        :param file_path: the path to the file that's being processed
-        :type file_path: unicode
-        :return: the current runtime (in seconds) of the process that's
-            processing the specified file or None if the file is not currently
-            being processed
-        """
-        if file_path in self._processors:
-            return (timezone.utcnow() - self._processors[file_path].start_time)\
-                .total_seconds()
-        return None
-
     def get_last_runtime(self, file_path):
         """
         :param file_path: the path to the file that was processed
@@ -1114,13 +1101,6 @@ class DagFileProcessorManager(LoggingMixin):
                 self.log.warning("Stopping processor for %s", file_path)
                 processor.terminate()
         self._processors = filtered_processors
-
-    def processing_count(self):
-        """
-        :return: the number of files currently being processed
-        :rtype: int
-        """
-        return len(self._processors)
 
     def wait_until_finished(self):
         """

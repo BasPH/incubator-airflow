@@ -20,10 +20,8 @@
 import copy
 import functools
 import os
-import pickle
 import re
 import sys
-import traceback
 import warnings
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
@@ -711,14 +709,6 @@ class DAG(BaseDag, LoggingMixin):
 
         return env
 
-    def set_dependency(self, upstream_task_id, downstream_task_id):
-        """
-        Simple utility method to set dependency between two tasks that
-        already have been added to the DAG using add_task()
-        """
-        self.get_task(upstream_task_id).set_downstream(
-            self.get_task(downstream_task_id))
-
     @provide_session
     def get_task_instances(
             self, start_date=None, end_date=None, state=None, session=None):
@@ -1034,20 +1024,6 @@ class DAG(BaseDag, LoggingMixin):
             return self.task_dict[task_id]
         raise AirflowException("Task {task_id} not found".format(task_id=task_id))
 
-    def pickle_info(self):
-        d = dict()
-        d['is_picklable'] = True
-        try:
-            dttm = timezone.utcnow()
-            pickled = pickle.dumps(self)
-            d['pickle_len'] = len(pickled)
-            d['pickling_duration'] = "{}".format(timezone.utcnow() - dttm)
-        except Exception as e:
-            self.log.debug(e)
-            d['is_picklable'] = False
-            d['stacktrace'] = traceback.format_exc()
-        return d
-
     @provide_session
     def pickle(self, session=None):
         dag = session.query(
@@ -1116,16 +1092,6 @@ class DAG(BaseDag, LoggingMixin):
             task.dag = self
 
         self.task_count = len(self.task_dict)
-
-    def add_tasks(self, tasks):
-        """
-        Add a list of tasks to the DAG
-
-        :param tasks: a lit of tasks you want to add
-        :type tasks: list of tasks
-        """
-        for task in tasks:
-            self.add_task(task)
 
     def run(
             self,

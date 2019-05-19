@@ -82,13 +82,6 @@ class State:
         return cls.state_color.get(state, 'white')
 
     @classmethod
-    def color_fg(cls, state):
-        color = cls.color(state)
-        if color in ['green', 'red']:
-            return 'white'
-        return 'black'
-
-    @classmethod
     def finished(cls):
         """
         A list of states indicating that a task started and completed a

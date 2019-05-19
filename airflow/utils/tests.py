@@ -18,19 +18,6 @@
 # under the License.
 
 import re
-import unittest
-
-
-def skipUnlessImported(module, obj):
-    import importlib
-    try:
-        m = importlib.import_module(module)
-    except ImportError:
-        m = None
-    return unittest.skipUnless(
-        obj in dir(m),
-        "Skipping test because {} could not be imported from {}".format(
-            obj, module))
 
 
 def assertEqualIgnoreMultipleSpaces(case, first, second, msg=None):

@@ -388,24 +388,6 @@ class DagRun(Base, LoggingMixin):
 
         session.commit()
 
-    @staticmethod
-    def get_run(session, dag_id, execution_date):
-        """
-        :param dag_id: DAG ID
-        :type dag_id: unicode
-        :param execution_date: execution date
-        :type execution_date: datetime
-        :return: DagRun corresponding to the given dag_id and execution date
-            if one exists. None otherwise.
-        :rtype: airflow.models.DagRun
-        """
-        qry = session.query(DagRun).filter(
-            DagRun.dag_id == dag_id,
-            DagRun.external_trigger == False, # noqa
-            DagRun.execution_date == execution_date,
-        )
-        return qry.first()
-
     @property
     def is_backfill(self):
         from airflow.jobs import BackfillJob
