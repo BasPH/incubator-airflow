@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.hooks.sagemaker_hook import SageMakerHook
 from airflow.contrib.operators.sagemaker_endpoint_operator \
     import SageMakerEndpointOperator
@@ -70,7 +70,7 @@ config = {
 class TestSageMakerEndpointOperator(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         self.sagemaker = SageMakerEndpointOperator(
             task_id='test_sagemaker_operator',
             aws_conn_id='sagemaker_test_id',

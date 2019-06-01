@@ -19,7 +19,8 @@
 
 
 import unittest
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.sensors.redis_pub_sub_sensor import RedisPubSubSensor
 from airflow.utils import timezone
 from airflow.contrib.hooks.redis_hook import RedisHook
@@ -31,7 +32,7 @@ DEFAULT_DATE = timezone.datetime(2017, 1, 1)
 class TestRedisPubSubSensor(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         args = {
             'owner': 'airflow',

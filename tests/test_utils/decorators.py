@@ -21,7 +21,7 @@ from contextlib import ContextDecorator
 
 from unittest.mock import Mock
 
-from airflow import conf
+from airflow.configuration import conf
 
 
 # So we don't depend on actual value in the test config.

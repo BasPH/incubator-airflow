@@ -14,7 +14,7 @@
 import unittest
 from io import StringIO
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.exceptions import AirflowConfigException
 from airflow.contrib.hooks.grpc_hook import GrpcHook
 from airflow.models import Connection
@@ -61,7 +61,7 @@ class StubClass:
 
 class TestGrpcHook(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         self.channel_mock = mock.patch('grpc.Channel').start()
 
     def custom_conn_func(self, connection):

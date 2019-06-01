@@ -18,7 +18,8 @@
 # under the License.
 
 import unittest
-from airflow import configuration, AirflowException
+from airflow import AirflowException
+from airflow.configuration import conf
 from airflow.contrib.sensors.aws_athena_sensor import AthenaSensor
 from airflow.contrib.hooks.aws_athena_hook import AWSAthenaHook
 from tests.compat import mock
@@ -27,7 +28,7 @@ from tests.compat import mock
 class TestAthenaSensor(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         self.sensor = AthenaSensor(task_id='test_athena_sensor',
                                    query_execution_id='abc',

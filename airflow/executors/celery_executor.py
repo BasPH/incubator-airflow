@@ -141,7 +141,7 @@ class CeleryExecutor(BaseExecutor):
         # (which can become a bottleneck on bigger clusters) so we use
         # a multiprocessing pool to speed this up.
         # How many worker processes are created for checking celery task state.
-        self._sync_parallelism = configuration.getint('celery', 'SYNC_PARALLELISM')
+        self._sync_parallelism = configuration.conf.getint('celery', 'SYNC_PARALLELISM')
         if self._sync_parallelism == 0:
             self._sync_parallelism = max(1, cpu_count() - 1)
 

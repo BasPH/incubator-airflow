@@ -19,7 +19,8 @@
 
 
 import unittest
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.sensors.aws_sqs_sensor import SQSSensor
 from airflow.utils import timezone
 from unittest.mock import patch, MagicMock
@@ -33,7 +34,7 @@ DEFAULT_DATE = timezone.datetime(2017, 1, 1)
 class TestSQSSensor(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         args = {
             'owner': 'airflow',

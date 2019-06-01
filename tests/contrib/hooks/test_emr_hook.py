@@ -21,7 +21,7 @@
 import unittest
 import boto3
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.hooks.emr_hook import EmrHook
 
 try:
@@ -34,7 +34,7 @@ except ImportError:
 class TestEmrHook(unittest.TestCase):
     @mock_emr
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     @mock_emr
     def test_get_conn_returns_a_boto3_connection(self):

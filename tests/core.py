@@ -1068,7 +1068,7 @@ class CliTests(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        configuration.conf.load_test_config()
         from airflow.www import app as application
         self.app, self.appbuilder = application.create_app(session=Session, testing=True)
         self.app.config['TESTING'] = True
@@ -2100,7 +2100,7 @@ class FakeHDFSHook:
 
 class ConnectionTest(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        configuration.conf.load_test_config()
         utils.db.initdb()
         os.environ['AIRFLOW_CONN_TEST_URI'] = (
             'postgres://username:password@ec2.compute.com:5432/the_database')
@@ -2180,7 +2180,7 @@ class ConnectionTest(unittest.TestCase):
 
 class WebHDFSHookTest(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        configuration.conf.load_test_config()
 
     def test_simple_init(self):
         from airflow.hooks.webhdfs_hook import WebHDFSHook
@@ -2200,7 +2200,7 @@ snakebite = None
                  "Skipping test because HDFSHook is not installed")
 class HDFSHookTest(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        configuration.conf.load_test_config()
         os.environ['AIRFLOW_CONN_HDFS_DEFAULT'] = 'hdfs://localhost:8020'
 
     def test_get_client(self):

@@ -30,7 +30,8 @@ from unittest import mock
 import pandas as pd
 from hmsclient import HMSClient
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException
 from airflow.hooks.hive_hooks import HiveCliHook, HiveMetastoreHook, HiveServer2Hook
 from airflow.models.connection import Connection
@@ -39,7 +40,7 @@ from airflow.utils import timezone
 from airflow.utils.operator_helpers import AIRFLOW_VAR_NAME_FORMAT_MAPPING
 from airflow.utils.tests import assertEqualIgnoreMultipleSpaces
 
-configuration.load_test_config()
+conf.load_test_config()
 
 DEFAULT_DATE = timezone.datetime(2015, 1, 1)
 DEFAULT_DATE_ISO = DEFAULT_DATE.isoformat()
@@ -50,7 +51,7 @@ NOT_ASSERTLOGS_VERSION = sys.version_info.major + sys.version_info.minor / 10
 class HiveEnvironmentTest(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
         self.dag = DAG('test_dag_id', default_args=args)
         self.next_day = (DEFAULT_DATE +
@@ -369,7 +370,7 @@ class TestHiveServer2Hook(unittest.TestCase):
         df.to_csv(self.local_path, header=False, index=False)
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         self._upload_dataframe()
         args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
         self.dag = DAG('test_dag_id', default_args=args)

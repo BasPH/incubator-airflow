@@ -27,7 +27,8 @@ from freezegun import freeze_time
 from unittest.mock import patch, mock_open
 from parameterized import parameterized
 
-from airflow import models, settings, configuration
+from airflow import models, settings
+from airflow.configuration import conf
 from airflow.contrib.sensors.python_sensor import PythonSensor
 from airflow.exceptions import AirflowException, AirflowSkipException
 from airflow.models import DAG, TaskFail, TaskInstance as TI, TaskReschedule, DagRun
@@ -927,8 +928,8 @@ class TaskInstanceTest(unittest.TestCase):
         ti = TI(
             task=task, execution_date=datetime.datetime.now())
 
-        configuration.set('email', 'SUBJECT_TEMPLATE', '/subject/path')
-        configuration.set('email', 'HTML_CONTENT_TEMPLATE', '/html_content/path')
+        conf.set('email', 'SUBJECT_TEMPLATE', '/subject/path')
+        conf.set('email', 'HTML_CONTENT_TEMPLATE', '/html_content/path')
 
         opener = mock_open(read_data='template: {{ti.task_id}}')
         with patch('airflow.models.taskinstance.open', opener, create=True):

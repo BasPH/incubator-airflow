@@ -18,7 +18,8 @@
 import datetime
 import unittest
 
-from airflow import configuration, DAG
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.utils import mlengine_operator_utils
 from airflow.exceptions import AirflowException
 from airflow.version import version
@@ -51,7 +52,7 @@ class CreateEvaluateOpsTest(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
         self.dag = DAG(
             'test_dag',
             default_args={

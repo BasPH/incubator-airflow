@@ -19,7 +19,8 @@
 
 import unittest
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.utils import timezone
 
 from airflow.contrib.operators.snowflake_operator import SnowflakeOperator
@@ -38,7 +39,7 @@ class TestSnowflakeOperator(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
         dag = DAG(TEST_DAG_ID, default_args=args)
         self.dag = dag

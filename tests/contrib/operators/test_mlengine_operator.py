@@ -23,7 +23,8 @@ import httplib2
 from googleapiclient.errors import HttpError
 from unittest.mock import ANY, patch
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.operators.mlengine_operator import (MLEngineBatchPredictionOperator,
                                                          MLEngineTrainingOperator,
                                                          MLEngineVersionOperator)
@@ -62,7 +63,7 @@ class MLEngineBatchPredictionOperatorTest(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
         self.dag = DAG(
             'test_dag',
             default_args={

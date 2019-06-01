@@ -22,7 +22,7 @@ import six
 import sys
 import tempfile
 
-from airflow import configuration as conf
+from airflow.configuration import conf
 from airflow.exceptions import AirflowConfigException
 from tests.compat import mock, patch
 
@@ -157,8 +157,8 @@ class TestLoggingSettings(unittest.TestCase):
     def tearDown(self):
         # Remove any new modules imported during the test run. This lets us
         # import the same source files for more than one test.
-        for m in [m for m in sys.modules if m not in self.old_modules]:
-            del sys.modules[m]
+        for mod in [m for m in sys.modules if m not in self.old_modules]:
+            del sys.modules[mod]
 
     # When we try to load an invalid config file, we expect an error
     def test_loading_invalid_local_settings(self):

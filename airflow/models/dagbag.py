@@ -291,7 +291,7 @@ class DagBag(BaseDagBag, LoggingMixin):
                     ti.end_date = zombie.end_date
                     ti.try_number = zombie.try_number
                     ti.state = zombie.state
-                    ti.test_mode = configuration.getboolean('core', 'unit_test_mode')
+                    ti.test_mode = configuration.conf.getboolean('core', 'unit_test_mode')
                     ti.handle_failure("{} detected as zombie".format(ti),
                                       ti.test_mode, ti.get_template_context())
                     self.log.info(

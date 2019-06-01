@@ -26,8 +26,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.session import make_transient, Session
 from typing import Optional
 
-from airflow import configuration as conf
 from airflow import executors, models
+from airflow.configuration import conf
 from airflow.exceptions import (
     AirflowException,
 )

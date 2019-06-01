@@ -25,12 +25,13 @@ import datetime
 from unittest import mock
 import pandas as pd
 
-from airflow import configuration, DAG
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.hooks.aws_dynamodb_hook import AwsDynamoDBHook
 
 import airflow.contrib.operators.hive_to_dynamodb
 
-configuration.load_test_config()
+conf.load_test_config()
 
 DEFAULT_DATE = datetime.datetime(2015, 1, 1)
 DEFAULT_DATE_ISO = DEFAULT_DATE.isoformat()
@@ -45,7 +46,7 @@ except ImportError:
 class HiveToDynamoDBTransferOperatorTest(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
         dag = DAG('test_dag_id', default_args=args)
         self.dag = dag

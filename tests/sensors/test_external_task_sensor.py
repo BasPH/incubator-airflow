@@ -19,8 +19,9 @@
 import unittest
 from datetime import timedelta, time
 
-from airflow import DAG, configuration, settings
+from airflow import DAG, settings
 from airflow import exceptions
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException, AirflowSensorTimeout
 from airflow.models import TaskInstance, DagBag
 from airflow.operators.bash_operator import BashOperator
@@ -30,7 +31,7 @@ from airflow.sensors.time_sensor import TimeSensor
 from airflow.utils.state import State
 from airflow.utils.timezone import datetime
 
-configuration.load_test_config()
+conf.load_test_config()
 
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = 'unit_test_dag'
@@ -41,7 +42,7 @@ DEV_NULL = '/dev/null'
 class ExternalTaskSensorTests(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         self.dagbag = DagBag(
             dag_folder=DEV_NULL,
             include_examples=True

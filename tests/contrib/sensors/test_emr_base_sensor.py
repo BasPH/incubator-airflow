@@ -19,14 +19,14 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.sensors.emr_base_sensor import EmrBaseSensor
 from airflow.exceptions import AirflowException
 
 
 class TestEmrBaseSensor(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     def test_subclasses_that_implment_required_methods_and_constants_succeed_when_response_is_good(self):
         class EmrBaseSensorSubclass(EmrBaseSensor):

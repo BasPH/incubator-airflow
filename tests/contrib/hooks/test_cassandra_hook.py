@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.hooks.cassandra_hook import CassandraHook
 from cassandra.cluster import Cluster
 from cassandra.policies import (
@@ -32,7 +32,7 @@ from tests.compat import mock, patch
 
 class CassandraHookTest(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='cassandra_test', conn_type='cassandra',

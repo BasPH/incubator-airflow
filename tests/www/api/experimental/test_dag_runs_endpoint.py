@@ -19,8 +19,8 @@
 import json
 import unittest
 
-from airflow import configuration
 from airflow.api.common.experimental.trigger_dag import trigger_dag
+from airflow.configuration import conf
 from airflow.models import DagBag, DagRun
 from airflow.settings import Session
 from airflow.www import app as application
@@ -41,7 +41,7 @@ class TestDagRunsEndpoint(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
         app, _ = application.create_app(testing=True)
         self.app = app.test_client()
 

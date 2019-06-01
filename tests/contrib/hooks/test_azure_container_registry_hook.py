@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.models import Connection
 from airflow.contrib.hooks.azure_container_registry_hook import AzureContainerRegistryHook
 from airflow.utils import db
@@ -28,7 +28,7 @@ from airflow.utils import db
 class TestAzureContainerRegistryHook(unittest.TestCase):
 
     def test_get_conn(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='azure_container_registry',

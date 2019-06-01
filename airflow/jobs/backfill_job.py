@@ -23,8 +23,8 @@ from collections import OrderedDict
 
 from sqlalchemy.orm.session import make_transient
 
-from airflow import configuration as conf
 from airflow import executors, models
+from airflow.configuration import conf
 from airflow.exceptions import (
     AirflowException,
     DagConcurrencyLimitReached,

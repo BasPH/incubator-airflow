@@ -22,6 +22,7 @@ from unittest import mock
 import six
 import unittest
 
+from airflow.configuration import conf
 from airflow.contrib.hooks import ftp_hook as fh
 
 
@@ -129,11 +130,10 @@ class TestIntegrationFTPHook(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        from airflow import configuration
         from airflow.utils import db
         from airflow.models import Connection
 
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='ftp_passive', conn_type='ftp',

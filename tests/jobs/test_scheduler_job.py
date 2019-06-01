@@ -30,7 +30,7 @@ from parameterized import parameterized
 
 import airflow.example_dags
 from airflow import AirflowException, models, settings
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.executors import BaseExecutor
 from airflow.jobs import BackfillJob, SchedulerJob
 from airflow.models import DAG, DagBag, DagModel, DagRun, Pool, SlaMiss, \
@@ -50,7 +50,7 @@ from tests.test_utils.db import clear_db_dags, clear_db_errors, clear_db_pools, 
     clear_db_runs, clear_db_sla_miss
 from tests.test_utils.decorators import mock_conf_get
 
-configuration.load_test_config()
+conf.load_test_config()
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 TRY_NUMBER = 1
@@ -67,6 +67,9 @@ TEMP_DAG_FILENAME = "temp_dag.py"
 
 class SchedulerJobTest(unittest.TestCase):
 
+    # Used for temporary storing conf.getboolean() to replace during tests.
+    original_getboolean = None
+
     def setUp(self):
         clear_db_runs()
         clear_db_pools()
@@ -82,19 +85,23 @@ class SchedulerJobTest(unittest.TestCase):
     def setUpClass(cls):
         cls.dagbag = DagBag()
 
-        def getboolean(section, key):
-            if section.lower() == 'core' and key.lower() == 'load_examples':
-                return False
-            else:
-                return configuration.conf.getboolean(section, key)
+        # Used this special "mocking" construction because the original getboolean() is called in the mocked
+        # getboolean(), resulting in infinite recursion. Adapted this method found in
+        # https://stackoverflow.com/a/45584744/3066428.
+        def mock_getboolean(original_getboolean):
+            def _getboolean(section, key):
+                if section.lower() == 'core' and key.lower() == 'load_examples':
+                    return False
+                else:
+                    return original_getboolean(section, key)
+            return _getboolean
 
-        cls.patcher = mock.patch('airflow.jobs.scheduler_job.conf.getboolean')
-        cls.mock_getboolean = cls.patcher.start()
-        cls.mock_getboolean.side_effect = getboolean
+        cls.original_getboolean = conf.getboolean
+        conf.getboolean = mock_getboolean(original_getboolean=cls.original_getboolean)
 
     @classmethod
     def tearDownClass(cls):
-        cls.patcher.stop()
+        conf.getboolean = cls.original_getboolean
 
     def test_is_alive(self):
         job = SchedulerJob(None, heartrate=10, state=State.RUNNING)
@@ -2274,7 +2281,7 @@ class SchedulerJobTest(unittest.TestCase):
                          schedule_interval='* * * * *',
                          start_date=six_hours_ago_to_the_hour,
                          catchup=True)
-        default_catchup = configuration.conf.getboolean('scheduler', 'catchup_by_default')
+        default_catchup = conf.getboolean('scheduler', 'catchup_by_default')
         self.assertEqual(default_catchup, True)
         self.assertEqual(dag1.catchup, True)
 

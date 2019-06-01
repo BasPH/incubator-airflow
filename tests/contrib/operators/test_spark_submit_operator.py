@@ -20,7 +20,8 @@
 
 import unittest
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.models import TaskInstance
 
 from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
@@ -67,7 +68,7 @@ class TestSparkSubmitOperator(unittest.TestCase):
     }
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': DEFAULT_DATE

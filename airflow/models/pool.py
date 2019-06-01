@@ -19,7 +19,7 @@
 
 from sqlalchemy import Column, Integer, String, Text, func
 
-from airflow import conf
+from airflow.configuration import conf
 from airflow.models.base import Base
 from airflow.utils.state import State
 from airflow.utils.db import provide_session

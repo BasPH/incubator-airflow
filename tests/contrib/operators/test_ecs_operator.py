@@ -24,7 +24,7 @@ from copy import deepcopy
 
 from parameterized import parameterized
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException
 from airflow.contrib.operators.ecs_operator import ECSOperator
 from tests.compat import mock
@@ -55,7 +55,7 @@ class TestECSOperator(unittest.TestCase):
 
     @mock.patch('airflow.contrib.operators.ecs_operator.AwsHook')
     def setUp(self, aws_hook_mock):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         self.aws_hook_mock = aws_hook_mock
         self.ecs_operator_args = {

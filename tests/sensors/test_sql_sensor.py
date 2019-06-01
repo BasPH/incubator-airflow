@@ -20,12 +20,12 @@ from unittest import mock
 import unittest
 
 from airflow import DAG
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException
 from airflow.sensors.sql_sensor import SqlSensor
 from airflow.utils.timezone import datetime
 
-configuration.load_test_config()
+conf.load_test_config()
 
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = 'unit_test_sql_dag'
@@ -34,7 +34,7 @@ TEST_DAG_ID = 'unit_test_sql_dag'
 class SqlSensorTests(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': DEFAULT_DATE
@@ -52,8 +52,7 @@ class SqlSensorTests(unittest.TestCase):
         with self.assertRaises(AirflowException):
             t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
 
-    @unittest.skipUnless(
-        'mysql' in configuration.conf.get('core', 'sql_alchemy_conn'), "this is a mysql test")
+    @unittest.skipUnless('mysql' in conf.get('core', 'sql_alchemy_conn'), "this is a mysql test")
     def test_sql_sensor_mysql(self):
         t1 = SqlSensor(
             task_id='sql_sensor_check',
@@ -72,8 +71,7 @@ class SqlSensorTests(unittest.TestCase):
         )
         t2.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
 
-    @unittest.skipUnless(
-        'postgresql' in configuration.conf.get('core', 'sql_alchemy_conn'), "this is a postgres test")
+    @unittest.skipUnless('postgresql' in conf.get('core', 'sql_alchemy_conn'), "this is a postgres test")
     def test_sql_sensor_postgres(self):
         t1 = SqlSensor(
             task_id='sql_sensor_check',

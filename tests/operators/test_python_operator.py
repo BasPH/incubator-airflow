@@ -23,7 +23,7 @@ import os
 import unittest
 from datetime import timedelta, date
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException
 from airflow.models import TaskInstance as TI, DAG, DagRun
 from airflow.operators.dummy_operator import DummyOperator
@@ -73,7 +73,7 @@ class PythonOperatorTest(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
         self.dag = DAG(
             'test_dag',
             default_args={

@@ -98,8 +98,7 @@ class HiveCliHook(BaseHook):
                     "Invalid Mapred Queue Priority.  Valid values are: "
                     "{}".format(', '.join(HIVE_QUEUE_PRIORITIES)))
 
-        self.mapred_queue = mapred_queue or configuration.get('hive',
-                                                              'default_hive_mapred_queue')
+        self.mapred_queue = mapred_queue or configuration.conf.get('hive', 'default_hive_mapred_queue')
         self.mapred_queue_priority = mapred_queue_priority
         self.mapred_job_name = mapred_job_name
 

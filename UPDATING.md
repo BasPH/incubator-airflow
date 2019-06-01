@@ -24,6 +24,11 @@ assists users migrating to a new version.
 
 ## Airflow Master
 
+### Unification of configuration
+There were multiple locations to access the Airflow configuration because the same methods were imported in
+multiple modules, and scripts imported from those multiple locations, resulting in a bit of spaghetti. This
+has been unified by creating a single entrypoint for configuration: `airflow.configuration.conf`.
+
 ### Changes in writing Logs to Elasticsearch
 
 The `elasticsearch_` prefix has been removed from all config items under the `[elasticsearch]` section. For example `elasticsearch_host` is now just `host`.
@@ -688,7 +693,7 @@ The config can be taken from `airflow/config_templates/airflow_local_settings.py
 
 import os
 
-from airflow import configuration as conf
+from airflow.configuration import conf
 
 # TODO: Logging format and level should be configured
 # in this file instead of from airflow.cfg. Currently

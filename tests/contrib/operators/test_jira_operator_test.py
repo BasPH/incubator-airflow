@@ -23,7 +23,8 @@ import unittest
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.operators.jira_operator import JiraOperator
 from airflow.models import Connection
 from airflow.utils import db
@@ -50,7 +51,7 @@ minimal_test_ticket = {
 
 class TestJiraOperator(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': DEFAULT_DATE

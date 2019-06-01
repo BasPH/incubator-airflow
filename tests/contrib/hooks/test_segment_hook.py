@@ -20,7 +20,8 @@
 from unittest import mock
 import unittest
 
-from airflow import configuration, AirflowException
+from airflow import AirflowException
+from airflow.configuration import conf
 
 from airflow.contrib.hooks.segment_hook import SegmentHook
 
@@ -32,7 +33,7 @@ class TestSegmentHook(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        configuration.load_test_config()
+        conf.load_test_config()
 
         self.conn = conn = mock.MagicMock()
         conn.write_key = WRITE_KEY

@@ -20,9 +20,9 @@
 
 import unittest
 
+from airflow.configuration import conf
 from airflow.contrib.operators.aws_athena_operator import AWSAthenaOperator
 from airflow.contrib.hooks.aws_athena_hook import AWSAthenaHook
-from airflow import configuration
 from tests.compat import mock
 
 MOCK_DATA = {
@@ -44,7 +44,7 @@ result_configuration = {
 class TestAWSAthenaOperator(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         self.athena = AWSAthenaOperator(task_id='test_aws_athena_operator', query='SELECT * FROM TEST_TABLE',
                                         database='TEST_DATABASE', output_location='s3://test_s3_bucket/',

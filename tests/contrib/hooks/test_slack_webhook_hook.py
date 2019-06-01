@@ -22,7 +22,7 @@ from requests.exceptions import MissingSchema
 import unittest
 from unittest import mock
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.models import Connection
 from airflow.utils import db
 from airflow.contrib.hooks.slack_webhook_hook import SlackWebhookHook
@@ -54,7 +54,7 @@ class TestSlackWebhookHook(unittest.TestCase):
     expected_method = 'POST'
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='slack-webhook-default',

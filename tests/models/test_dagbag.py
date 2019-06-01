@@ -26,7 +26,8 @@ from tempfile import mkdtemp, NamedTemporaryFile
 
 from unittest.mock import patch, ANY
 
-from airflow import models, configuration
+from airflow import models
+from airflow.configuration import conf
 from airflow.models import DagModel, DagBag, TaskInstance as TI
 from airflow.utils.dag_processing import SimpleTaskInstance
 from airflow.utils.db import create_session
@@ -549,11 +550,7 @@ class DagBagTest(unittest.TestCase):
 
             zombies = [SimpleTaskInstance(ti)]
             dagbag.kill_zombies(zombies)
-            mock_ti_handle_failure \
-                .assert_called_with(ANY,
-                                    configuration.getboolean('core',
-                                                             'unit_test_mode'),
-                                    ANY)
+            mock_ti_handle_failure.assert_called_with(ANY, conf.getboolean('core', 'unit_test_mode'), ANY)
 
     def test_deactivate_unknown_dags(self):
         """

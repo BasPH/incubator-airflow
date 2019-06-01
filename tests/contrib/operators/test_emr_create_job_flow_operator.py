@@ -23,7 +23,8 @@ from datetime import timedelta
 
 from unittest.mock import MagicMock, patch
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.operators.emr_create_job_flow_operator import EmrCreateJobFlowOperator
 from airflow.models import TaskInstance
 from airflow.utils import timezone
@@ -58,7 +59,7 @@ class TestEmrCreateJobFlowOperator(unittest.TestCase):
     }
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': DEFAULT_DATE

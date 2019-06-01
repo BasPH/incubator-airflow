@@ -29,8 +29,8 @@ from urllib.parse import urlparse
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.wsgi import DispatcherMiddleware
 
-from airflow import configuration as conf
 from airflow import settings
+from airflow.configuration import conf
 from airflow.logging_config import configure_logging
 from airflow.utils.json import AirflowJsonEncoder
 from airflow.www.static_config import configure_manifest_files

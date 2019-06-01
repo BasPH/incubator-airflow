@@ -21,8 +21,7 @@ import logging
 import os
 import requests
 
-from airflow import configuration as conf
-from airflow.configuration import AirflowConfigException
+from airflow.configuration import AirflowConfigException, conf
 from airflow.utils.file import mkdirs
 from airflow.utils.helpers import parse_template_string
 

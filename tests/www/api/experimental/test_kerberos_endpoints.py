@@ -34,7 +34,7 @@ from airflow.www import app as application
                  'Skipping Kerberos API tests due to missing KRB5_KTNAME')
 class ApiKerberosTests(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        configuration.conf.load_test_config()
         try:
             configuration.conf.add_section("api")
         except Exception:

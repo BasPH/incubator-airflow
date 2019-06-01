@@ -22,7 +22,8 @@ import requests
 import requests_mock
 import unittest
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.operators.hive_to_druid import HiveToDruidTransfer
 
 
@@ -63,7 +64,7 @@ class TestDruidHook(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': '2017-01-01'

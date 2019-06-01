@@ -29,8 +29,6 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 import kerberos
 import os
 
-from airflow import configuration as conf
-
 from flask import Response
 from flask import _request_ctx_stack as stack  # type: ignore
 from flask import make_response
@@ -40,6 +38,8 @@ from functools import wraps
 
 from requests_kerberos import HTTPKerberosAuth
 from socket import getfqdn
+
+from airflow.configuration import conf
 
 client_auth = HTTPKerberosAuth(service='airflow')
 

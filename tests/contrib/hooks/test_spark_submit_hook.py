@@ -20,7 +20,8 @@
 import six
 import unittest
 
-from airflow import configuration, AirflowException
+from airflow import AirflowException
+from airflow.configuration import conf
 from airflow.models import Connection
 from airflow.utils import db
 from unittest.mock import patch, call
@@ -72,7 +73,7 @@ class TestSparkSubmitHook(unittest.TestCase):
 
     def setUp(self):
 
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='spark_yarn_cluster', conn_type='spark',

@@ -140,9 +140,9 @@ class DaskExecutorTLSTest(BaseDaskTest):
 
             # These use test certs that ship with dask/distributed and should not be
             #  used in production
-            configuration.set('dask', 'tls_ca', get_cert('tls-ca-cert.pem'))
-            configuration.set('dask', 'tls_cert', get_cert('tls-key-cert.pem'))
-            configuration.set('dask', 'tls_key', get_cert('tls-key.pem'))
+            configuration.conf.set('dask', 'tls_ca', get_cert('tls-ca-cert.pem'))
+            configuration.conf.set('dask', 'tls_cert', get_cert('tls-key-cert.pem'))
+            configuration.conf.set('dask', 'tls_key', get_cert('tls-key.pem'))
             try:
                 executor = DaskExecutor(cluster_address=s['address'])
 
@@ -153,9 +153,9 @@ class DaskExecutorTLSTest(BaseDaskTest):
                 # and tasks to have completed.
                 executor.client.close()
             finally:
-                configuration.set('dask', 'tls_ca', '')
-                configuration.set('dask', 'tls_key', '')
-                configuration.set('dask', 'tls_cert', '')
+                configuration.conf.set('dask', 'tls_ca', '')
+                configuration.conf.set('dask', 'tls_key', '')
+                configuration.conf.set('dask', 'tls_cert', '')
 
     @unittest.skipIf(SKIP_DASK, 'Dask unsupported by this configuration')
     @mock.patch('airflow.executors.dask_executor.DaskExecutor.sync')

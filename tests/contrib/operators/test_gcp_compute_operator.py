@@ -23,7 +23,8 @@ from copy import deepcopy
 import httplib2
 from googleapiclient.errors import HttpError
 
-from airflow import AirflowException, configuration
+from airflow import AirflowException
+from airflow.configuration import conf
 from airflow.contrib.operators.gcp_compute_operator import GceInstanceStartOperator, \
     GceInstanceStopOperator, GceSetMachineTypeOperator, GceInstanceTemplateCopyOperator, \
     GceInstanceGroupManagerUpdateTemplateOperator
@@ -67,7 +68,7 @@ class GceInstanceStartTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
     def test_instance_start_with_templates(self, _):
         dag_id = 'test_dag_id'
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'start_date': DEFAULT_DATE
         }
@@ -162,7 +163,7 @@ class GceInstanceStopTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
     def test_instance_stop_with_templates(self, _):
         dag_id = 'test_dag_id'
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'start_date': DEFAULT_DATE
         }
@@ -267,7 +268,7 @@ class GceInstanceSetMachineTypeTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
     def test_set_machine_type_with_templates(self, _):
         dag_id = 'test_dag_id'
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'start_date': DEFAULT_DATE
         }

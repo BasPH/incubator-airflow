@@ -22,7 +22,8 @@ import unittest
 
 from unittest.mock import Mock, patch, mock_open
 
-from airflow import configuration, AirflowException
+from airflow import AirflowException
+from airflow.configuration import conf
 from airflow.contrib.hooks.imap_hook import ImapHook
 from airflow.models import Connection
 from airflow.utils import db
@@ -54,7 +55,7 @@ def _create_fake_imap(mock_imaplib, with_mail=False, attachment_name='test1.csv'
 
 class TestImapHook(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
         db.merge_conn(
             Connection(

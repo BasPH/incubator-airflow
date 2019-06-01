@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.sensors.sagemaker_tuning_sensor \
     import SageMakerTuningSensor
 from airflow.contrib.hooks.sagemaker_hook import SageMakerHook
@@ -58,7 +58,7 @@ DESCRIBE_TUNING_STOPPING_RESPONSE = {
 
 class TestSageMakerTuningSensor(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     @mock.patch.object(SageMakerHook, 'get_conn')
     @mock.patch.object(SageMakerHook, 'describe_tuning_job')

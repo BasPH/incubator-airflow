@@ -24,7 +24,7 @@ import json
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.hooks.jdbc_hook import JdbcHook
 from airflow.models import Connection
 from airflow.utils import db
@@ -36,7 +36,7 @@ jdbc_conn_mock = Mock(
 
 class TestJdbcHook(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         db.merge_conn(
             Connection(
                 conn_id='jdbc_default', conn_type='jdbc',

@@ -19,8 +19,8 @@
 
 from typing import Any
 
+from airflow.configuration import conf
 from airflow.exceptions import AirflowException
-from airflow import configuration as conf
 from importlib import import_module
 
 from airflow.utils.log.logging_mixin import LoggingMixin

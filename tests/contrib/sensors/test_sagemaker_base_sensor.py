@@ -19,14 +19,14 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.sensors.sagemaker_base_sensor import SageMakerBaseSensor
 from airflow.exceptions import AirflowException
 
 
 class TestSagemakerBaseSensor(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     def test_execute(self):
         class SageMakerBaseSensorSubclass(SageMakerBaseSensor):

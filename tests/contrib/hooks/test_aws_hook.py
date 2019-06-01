@@ -22,7 +22,7 @@ import unittest
 
 import boto3
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.models import Connection
 from airflow.contrib.hooks.aws_hook import AwsHook
 from tests.compat import mock
@@ -39,7 +39,7 @@ except ImportError:
 class TestAwsHook(unittest.TestCase):
     @mock_emr
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     @unittest.skipIf(mock_emr is None, 'mock_emr package not present')
     @mock_emr

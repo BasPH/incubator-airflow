@@ -37,9 +37,9 @@ class DaskExecutor(BaseExecutor):
                 'Please provide a Dask cluster address in airflow.cfg')
         self.cluster_address = cluster_address
         # ssl / tls parameters
-        self.tls_ca = configuration.get('dask', 'tls_ca')
-        self.tls_key = configuration.get('dask', 'tls_key')
-        self.tls_cert = configuration.get('dask', 'tls_cert')
+        self.tls_ca = configuration.conf.get('dask', 'tls_ca')
+        self.tls_key = configuration.conf.get('dask', 'tls_key')
+        self.tls_cert = configuration.conf.get('dask', 'tls_cert')
         super().__init__(parallelism=0)
 
     def start(self):

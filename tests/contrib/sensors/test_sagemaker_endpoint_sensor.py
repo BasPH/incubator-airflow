@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.contrib.sensors.sagemaker_endpoint_sensor \
     import SageMakerEndpointSensor
 from airflow.contrib.hooks.sagemaker_hook import SageMakerHook
@@ -57,7 +57,7 @@ DESCRIBE_ENDPOINT_UPDATING_RESPONSE = {
 
 class TestSageMakerEndpointSensor(unittest.TestCase):
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     @mock.patch.object(SageMakerHook, 'get_conn')
     @mock.patch.object(SageMakerHook, 'describe_endpoint')

@@ -22,10 +22,9 @@ import json
 import unittest
 from urllib.parse import quote_plus
 
-
-from airflow import configuration as conf
 from airflow import settings
 from airflow.api.common.experimental.trigger_dag import trigger_dag
+from airflow.configuration import conf
 from airflow.models import DagBag, DagRun, Pool, TaskInstance
 from airflow.settings import Session
 from airflow.utils.timezone import datetime, utcnow, parse as parse_datetime

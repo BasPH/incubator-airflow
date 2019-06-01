@@ -21,7 +21,8 @@
 import datetime
 import unittest
 
-from airflow import DAG, configuration
+from airflow import DAG
+from airflow.configuration import conf
 from airflow.contrib.operators.wasb_delete_blob_operator import WasbDeleteBlobOperator
 from tests.compat import mock
 
@@ -34,7 +35,7 @@ class TestWasbDeleteBlobOperator(unittest.TestCase):
     }
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
         args = {
             'owner': 'airflow',
             'start_date': datetime.datetime(2017, 1, 1)

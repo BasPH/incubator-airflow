@@ -1133,7 +1133,7 @@ class TaskInstance(Base, LoggingMixin):
         if task.params:
             params.update(task.params)
 
-        if configuration.getboolean('core', 'dag_run_conf_overrides_params'):
+        if configuration.conf.getboolean('core', 'dag_run_conf_overrides_params'):
             self.overwrite_params_with_dag_run_conf(params=params, dag_run=dag_run)
 
         class VariableAccessor:
@@ -1196,7 +1196,7 @@ class TaskInstance(Base, LoggingMixin):
             'task_instance': self,
             'ti': self,
             'task_instance_key_str': ti_key_str,
-            'conf': configuration,
+            'conf': configuration.conf,
             'test_mode': self.test_mode,
             'var': {
                 'value': VariableAccessor(),
@@ -1252,8 +1252,8 @@ class TaskInstance(Base, LoggingMixin):
         )
 
         def render(key, content):
-            if configuration.has_option('email', key):
-                path = configuration.get('email', key)
+            if configuration.conf.has_option('email', key):
+                path = configuration.conf.get('email', key)
                 with open(path) as f:
                     content = f.read()
 

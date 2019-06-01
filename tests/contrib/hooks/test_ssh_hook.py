@@ -18,7 +18,7 @@
 # under the License.
 
 import unittest
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.models import Connection
 from airflow.utils import db
 from tests.compat import mock
@@ -42,7 +42,7 @@ conn.sendall(b'hello')
 class SSHHookTest(unittest.TestCase):
 
     def setUp(self):
-        configuration.load_test_config()
+        conf.load_test_config()
 
     @mock.patch('airflow.contrib.hooks.ssh_hook.paramiko.SSHClient')
     def test_ssh_connection_with_password(self, ssh_mock):

@@ -23,7 +23,7 @@ import pickle
 from sqlalchemy import Column, Integer, String, Index, LargeBinary, and_
 from sqlalchemy.orm import reconstructor
 
-from airflow import configuration
+from airflow.configuration import conf
 from airflow.models.base import Base, ID_LEN
 from airflow.utils import timezone
 from airflow.utils.db import provide_session
@@ -65,7 +65,7 @@ class XCom(Base, LoggingMixin):
     """
     @reconstructor
     def init_on_load(self):
-        enable_pickling = configuration.getboolean('core', 'enable_xcom_pickling')
+        enable_pickling = conf.getboolean('core', 'enable_xcom_pickling')
         if enable_pickling:
             self.value = pickle.loads(self.value)
         else:
@@ -102,7 +102,7 @@ class XCom(Base, LoggingMixin):
         """
         session.expunge_all()
 
-        enable_pickling = configuration.getboolean('core', 'enable_xcom_pickling')
+        enable_pickling = conf.getboolean('core', 'enable_xcom_pickling')
         if enable_pickling:
             value = pickle.dumps(value)
         else:
@@ -169,7 +169,7 @@ class XCom(Base, LoggingMixin):
 
         result = query.first()
         if result:
-            enable_pickling = configuration.getboolean('core', 'enable_xcom_pickling')
+            enable_pickling = conf.getboolean('core', 'enable_xcom_pickling')
             if enable_pickling:
                 return pickle.loads(result.value)
             else:
