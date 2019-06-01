@@ -17,8 +17,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-# Note: Any AirflowException raised is expected to cause the TaskInstance
-#       to be marked in an ERROR state
+
+"""
+Collection of all Airflow exceptions.
+Note: Any AirflowException raised is expected to cause the TaskInstance to be marked in an ERROR state.
+"""
 
 
 class AirflowException(Exception):
@@ -40,11 +43,11 @@ class AirflowNotFoundException(AirflowException):
 
 
 class AirflowConfigException(AirflowException):
-    pass
+    """Raise in case of missing/incorrect configuration."""
 
 
 class AirflowSensorTimeout(AirflowException):
-    pass
+    """Raise in case the timeout of a sensor is reached."""
 
 
 class AirflowRescheduleException(AirflowException):
@@ -59,70 +62,60 @@ class AirflowRescheduleException(AirflowException):
 
 
 class InvalidStatsNameException(AirflowException):
-    pass
+    """Raise in case the stats name is invalid."""
 
 
 class AirflowTaskTimeout(AirflowException):
-    pass
+    """Raise in case a task did not complete in time."""
 
 
 class AirflowWebServerTimeout(AirflowException):
-    pass
+    """Raise in case the webserver did not respond in time."""
 
 
 class AirflowSkipException(AirflowException):
-    pass
+    """Raise to skip the current task."""
 
 
 class AirflowDagCycleException(AirflowException):
-    pass
+    """Raise in case a cycle in the DAG is detected."""
 
 
 class DagNotFound(AirflowNotFoundException):
     """Raise when a DAG is not available in the system"""
-    pass
 
 
 class DagRunNotFound(AirflowNotFoundException):
     """Raise when a DAG Run is not available in the system"""
-    pass
 
 
 class DagRunAlreadyExists(AirflowBadRequest):
     """Raise when creating a DAG run for DAG which already has DAG run entry"""
-    pass
 
 
 class DagFileExists(AirflowBadRequest):
     """Raise when a DAG ID is still in DagBag i.e., DAG file is in DAG folder"""
-    pass
 
 
 class TaskNotFound(AirflowNotFoundException):
     """Raise when a Task is not available in the system"""
-    pass
 
 
 class TaskInstanceNotFound(AirflowNotFoundException):
     """Raise when a Task Instance is not available in the system"""
-    pass
 
 
 class PoolNotFound(AirflowNotFoundException):
     """Raise when a Pool is not available in the system"""
-    pass
 
 
 class NoAvailablePoolSlot(AirflowException):
     """Raise when there is not enough slots in pool"""
-    pass
 
 
 class DagConcurrencyLimitReached(AirflowException):
     """Raise when DAG concurrency limit is reached"""
-    pass
 
 
 class TaskConcurrencyLimitReached(AirflowException):
     """Raise when task concurrency limit is reached"""
-    pass

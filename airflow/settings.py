@@ -20,14 +20,15 @@
 import atexit
 import logging
 import os
-import pendulum
 import sys
 
+import pendulum
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import NullPool
 
-from airflow.configuration import conf, AIRFLOW_HOME, WEBSERVER_CONFIG  # NOQA F401
+from airflow.configuration import conf, AIRFLOW_HOME  # NOQA F401
+from airflow.exceptions import AirflowConfigException
 from airflow.logging_config import configure_logging
 from airflow.utils.sqlalchemy import setup_event_handlers
 
@@ -43,7 +44,7 @@ try:
         TIMEZONE = pendulum.timezone(tz)
 except Exception:
     pass
-log.info("Configured default timezone %s" % TIMEZONE)
+log.info("Configured default timezone %s", TIMEZONE)
 
 
 HEADER = '\n'.join([
@@ -95,7 +96,6 @@ def policy(task_instance):
         pool.
     * ...
     """
-    pass
 
 
 def configure_vars():
@@ -112,8 +112,15 @@ def configure_vars():
     )
 
 
-def configure_orm(disable_connection_pool=False):
-    log.debug("Setting up DB connection pool (PID %s)" % os.getpid())
+def configure_orm(disable_connection_pool: bool = False):
+    """
+    Apply all configuration settings to the ORM layer for communicating with the metastore.
+
+    :param bool disable_connection_pool: True to disable and don't use connection pooling, instead open and
+        close the DB connection for every open and close statement.
+    """
+
+    log.debug("Setting up DB connection pool (PID %s)", os.getpid())
     global engine
     global Session
     engine_args = {}
@@ -128,7 +135,7 @@ def configure_orm(disable_connection_pool=False):
         # 0 means no limit, which could lead to exceeding the Database connection limit.
         try:
             pool_size = conf.getint('core', 'SQL_ALCHEMY_POOL_SIZE')
-        except conf.AirflowConfigException:
+        except AirflowConfigException:
             pool_size = 5
 
         # The maximum overflow size of the pool.
@@ -143,7 +150,7 @@ def configure_orm(disable_connection_pool=False):
         # of concurrent connections. Defaults to 10.
         try:
             max_overflow = conf.getint('core', 'SQL_ALCHEMY_MAX_OVERFLOW')
-        except conf.AirflowConfigException:
+        except AirflowConfigException:
             max_overflow = 10
 
         # The DB server already has a value for wait_timeout (number of seconds after
@@ -152,11 +159,11 @@ def configure_orm(disable_connection_pool=False):
         # pool_recycle to an equal or smaller value.
         try:
             pool_recycle = conf.getint('core', 'SQL_ALCHEMY_POOL_RECYCLE')
-        except conf.AirflowConfigException:
+        except AirflowConfigException:
             pool_recycle = 1800
 
-        log.info("settings.configure_orm(): Using pool settings. pool_size={}, max_overflow={}, "
-                 "pool_recycle={}, pid={}".format(pool_size, max_overflow, pool_recycle, os.getpid()))
+        log.info("settings.configure_orm(): Using pool settings. pool_size=%s, max_overflow=%s, "
+                 "pool_recycle=%s, pid=%s", pool_size, max_overflow, pool_recycle, os.getpid())
         engine_args['pool_size'] = pool_size
         engine_args['pool_recycle'] = pool_recycle
         engine_args['max_overflow'] = max_overflow
@@ -180,7 +187,7 @@ def configure_orm(disable_connection_pool=False):
 
 
 def dispose_orm():
-    """ Properly close pooled database connections """
+    """Properly close pooled database connections."""
     log.debug("Disposing DB connection pool (PID %s)", os.getpid())
     global engine
     global Session
@@ -194,6 +201,8 @@ def dispose_orm():
 
 
 def configure_adapters():
+    """[AIRFLOW-1802] Convert database fields to timezone aware."""
+
     from pendulum import Pendulum
     try:
         from sqlite3 import register_adapter
@@ -207,7 +216,13 @@ def configure_adapters():
         pass
 
 
-def validate_session():
+def validate_session() -> bool:
+    """
+    Validate connectivity to Airflow metastore.
+    :return: True if connection succeeded, otherwise False
+    :rtype: bool
+    """
+
     worker_precheck = conf.getboolean('core', 'worker_precheck', fallback=False)
     if not worker_precheck:
         return True
@@ -225,12 +240,7 @@ def validate_session():
 
 
 def configure_action_logging():
-    """
-    Any additional configuration (register callback) for airflow.utils.action_loggers
-    module
-    :rtype: None
-    """
-    pass
+    """Any additional configuration (register callback) for airflow.utils.action_loggers module."""
 
 
 def prepare_classpath():
@@ -259,6 +269,8 @@ except Exception:
 
 
 def initialize():
+    """Configure all Airflow settings."""
+
     configure_vars()
     prepare_classpath()
     global LOGGING_CLASS_PATH

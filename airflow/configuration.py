@@ -17,17 +17,20 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from base64 import b64encode
-from builtins import str
-from collections import OrderedDict
-import copy
+"""
+A collection of constants, configuration and helper functions loosely related to the Airflow configuration.
+"""
+
 import os
 import pathlib
 import shlex
-from six import iteritems
 import subprocess
 import sys
 import warnings
+from base64 import b64encode
+from builtins import str
+from collections import OrderedDict
+from typing import Union, Dict
 
 from backports.configparser import ConfigParser, _UNSET, NoOptionError
 from zope.deprecation import deprecated
@@ -44,7 +47,12 @@ warnings.filterwarnings(
     action='default', category=PendingDeprecationWarning, module='airflow')
 
 
-def generate_fernet_key():
+def generate_fernet_key() -> str:
+    """
+    Generate a fernet key.
+    :return: Generated fernet key or empty string if Fernet class not found
+    :rtype: str
+    """
     try:
         from cryptography.fernet import Fernet
     except ImportError:
@@ -93,15 +101,16 @@ def run_command(command):
 def _read_default_config_file(file_name):
     templates_dir = os.path.join(os.path.dirname(__file__), 'config_templates')
     file_path = os.path.join(templates_dir, file_name)
-    with open(file_path, encoding='utf-8') as f:
-        return f.read()
+    with open(file_path, encoding='utf-8') as file:
+        return file.read()
 
 
 DEFAULT_CONFIG = _read_default_config_file('default_airflow.cfg')
 TEST_CONFIG = _read_default_config_file('default_test.cfg')
 
 
-class AirflowConfigParser(ConfigParser):
+class AirflowConfigParser(ConfigParser):  # pylint: disable=too-many-ancestors
+    """Class responsible for parsing the Airflow configuration file."""
 
     # These configuration elements can be fetched as the stdout of commands
     # following the "{section}__{name}__cmd" pattern, the idea behind this
@@ -185,21 +194,36 @@ class AirflowConfigParser(ConfigParser):
     def _env_var_name(section, key):
         return 'AIRFLOW__{S}__{K}'.format(S=section.upper(), K=key.upper())
 
-    def _get_env_var_option(self, section, key):
-        # must have format AIRFLOW__{SECTION}__{KEY} (note double underscore)
+    def _get_env_var_option(self, section: str, key: str) -> Union[str, None]:
+        """
+        Get a configuration option from an environment variable.
+        Must have format AIRFLOW__{SECTION}__{KEY} (note the double underscore).
+        :param str section: Section name
+        :param str key: Key name
+        :return: Option value if found, else None
+        :rtype: Union[str, None]
+        """
         env_var = self._env_var_name(section, key)
-        if env_var in os.environ:
-            return expand_env_var(os.environ[env_var])
+        return expand_env_var(os.environ.get(env_var, None))
 
-    def _get_cmd_option(self, section, key):
+    def _get_cmd_option(self, section: str, key: str) -> Union[str, None]:
+        """
+        Get a configuration option from a command. The command can be given in the configuration file.
+        For example: ``sql_alchemy_conn_cmd = bash_command_to_run`` (in the configuration file).
+        :param str section: Section name
+        :param str key: Key name
+        :return: Option value if found, else None
+        :rtype: Union[str, None]
+        """
         fallback_key = key + '_cmd'
         # if this is a valid command key...
         if (section, key) in self.as_command_stdout:
             if super().has_option(section, fallback_key):
                 command = super().get(section, fallback_key)
                 return run_command(command)
+        return None
 
-    def get(self, section, key, **kwargs):
+    def get(self, section, key, **kwargs):  # pylint: disable=too-many-return-statements
         section = str(section).lower()
         key = str(key).lower()
 
@@ -303,77 +327,73 @@ class AirflowConfigParser(ConfigParser):
         if self.airflow_defaults.has_option(section, option) and remove_default:
             self.airflow_defaults.remove_option(section, option)
 
-    def getsection(self, section):
+    def getsection(self, section: str) -> Union[Dict, None]:
         """
-        Returns the section as a dict. Values are converted to int, float, bool
-        as required.
-
-        :param section: section from the config
-        :rtype: dict
+        Returns the section as a dict. Values are converted to int, float or bool if possible.
+        :param section: Section as dict, None if section doesn't exist
+        :rtype: Union[Dict, None]
         """
-        if (section not in self._sections and
-                section not in self.airflow_defaults._sections):
+        if not self.has_section(section) and not self.airflow_defaults.has_section(section):
             return None
 
-        _section = copy.deepcopy(self.airflow_defaults._sections[section])
+        # Fetch the sections from airflow_defaults and self
+        section_ = (
+            dict(self.airflow_defaults.items(section)) if self.airflow_defaults.has_section(section) else {}
+        )
+        if self.has_section(section):
+            section_.update(dict(self.items(section)))
 
-        if section in self._sections:
-            _section.update(copy.deepcopy(self._sections[section]))
+        # Fetch option overrides from environment variables
+        section_prefix = 'AIRFLOW__{section}__'.format(section=section.upper())
+        for envvarkey in [key for key in os.environ.keys() if key.startswith(section_prefix)]:
+            key = envvarkey.replace(section_prefix, '').lower()
+            section_[key] = self._get_env_var_option(section, key)
 
-        section_prefix = 'AIRFLOW__{S}__'.format(S=section.upper())
-        for env_var in sorted(os.environ.keys()):
-            if env_var.startswith(section_prefix):
-                key = env_var.replace(section_prefix, '').lower()
-                _section[key] = self._get_env_var_option(section, key)
-
-        for key, val in iteritems(_section):
+        # Try type casting if possible
+        for key, val in section_.items():
             try:
-                val = int(val)
+                section_[key] = int(val)
             except ValueError:
                 try:
-                    val = float(val)
+                    section_[key] = float(val)
                 except ValueError:
                     if val.lower() in ('t', 'true'):
-                        val = True
+                        section_[key] = True
                     elif val.lower() in ('f', 'false'):
-                        val = False
-            _section[key] = val
-        return _section
+                        section_[key] = False
 
-    def as_dict(
-            self, display_source=False, display_sensitive=False, raw=False,
-            include_env=True, include_cmds=True):
-        """
-        Returns the current configuration as an OrderedDict of OrderedDicts.
+        return section_
 
-        :param display_source: If False, the option value is returned. If True,
-            a tuple of (option_value, source) is returned. Source is either
-            'airflow.cfg', 'default', 'env var', or 'cmd'.
-        :type display_source: bool
-        :param display_sensitive: If True, the values of options set by env
-            vars and bash commands will be displayed. If False, those options
-            are shown as '< hidden >'
-        :type display_sensitive: bool
-        :param raw: Should the values be output as interpolated values, or the
-            "raw" form that can be fed back in to ConfigParser
-        :type raw: bool
-        :param include_env: Should the value of configuration from AIRFLOW__
-            environment variables be included or not
-        :type include_env: bool
-        :param include_cmds: Should the result of calling any *_cmd config be
-            set (True, default), or should the _cmd options be left as the
-            command to run (False)
-        :type include_cmds: bool
+    def as_dict(self, display_source: bool = False, display_sensitive: bool = False, raw: bool = False,
+                include_env: bool = True, include_cmds: bool = True) -> Dict[str, Dict[str, str]]:
         """
-        cfg = {}
+        Returns the current configuration as a dict of OrderedDicts.
+        Note the return type shows Dict, not OrderedDict, because of a Python typing issue. See
+        https://stackoverflow.com/a/43583996/3066428.
+
+        :param bool display_source: If False, the option value is returned. If True, a tuple of
+            (option_value, source) is returned. Source is either 'airflow.cfg', 'default', 'env var', or
+            'cmd'.
+        :param bool display_sensitive: If True, the values of options set by env vars and bash commands will
+            be displayed. If False, those options are shown as '< hidden >'.
+        :param bool raw: Should the values be output as interpolated values, or the "raw" form that can be fed
+            back in to ConfigParser.
+        :param bool include_env: Should the value of configuration from AIRFLOW__ environment variables be
+            included or not.
+        :param bool include_cmds: Should the result of calling any *_cmd config be set (True, default), or
+            should the _cmd options be left as the command to run (False).
+        :return: Dict with key section and value OrderedDict where key is option name and value option value
+        :rtype: Dict[str, OrderedDict[str, str]]
+        """
+        result = {}
         configs = [
             ('default', self.airflow_defaults),
             ('airflow.cfg', self),
         ]
 
-        for (source_name, config) in configs:
+        for (source_name, config) in configs:  # pylint: disable=too-many-nested-blocks
             for section in config.sections():
-                sect = cfg.setdefault(section, OrderedDict())
+                sect = result.setdefault(section, OrderedDict())
                 for (k, val) in config.items(section=section, raw=raw):
                     if display_source:
                         val = (val, source_name)
@@ -381,23 +401,23 @@ class AirflowConfigParser(ConfigParser):
 
         # add env vars and overwrite because they have priority
         if include_env:
-            for ev in [ev for ev in os.environ if ev.startswith('AIRFLOW__')]:
+            for envvar in [ev for ev in os.environ if ev.startswith('AIRFLOW__')]:
                 try:
-                    _, section, key = ev.split('__')
+                    _, section, key = envvar.split('__')
                     opt = self._get_env_var_option(section, key)
                 except ValueError:
                     continue
-                if not display_sensitive and ev != 'AIRFLOW__CORE__UNIT_TEST_MODE':
+                if not display_sensitive and envvar != 'AIRFLOW__CORE__UNIT_TEST_MODE':
                     opt = '< hidden >'
                 elif raw:
                     opt = opt.replace('%', '%%')
                 if display_source:
                     opt = (opt, 'env var')
-                cfg.setdefault(section.lower(), OrderedDict()).update(
+                result.setdefault(section.lower(), OrderedDict()).update(
                     {key.lower(): opt})
 
         # add bash commands
-        if include_cmds:
+        if include_cmds:  # pylint: disable=too-many-nested-blocks
             for (section, key) in self.as_command_stdout:
                 opt = self._get_cmd_option(section, key)
                 if opt:
@@ -407,10 +427,10 @@ class AirflowConfigParser(ConfigParser):
                         opt = (opt, 'cmd')
                     elif raw:
                         opt = opt.replace('%', '%%')
-                    cfg.setdefault(section, OrderedDict()).update({key: opt})
-                    del cfg[section][key + '_cmd']
+                    result.setdefault(section, OrderedDict()).update({key: opt})
+                    del result[section][key + '_cmd']
 
-        return cfg
+        return result
 
     def load_test_config(self):
         """
@@ -438,11 +458,22 @@ class AirflowConfigParser(ConfigParser):
         )
 
 
-def get_airflow_home():
+def get_airflow_home() -> str:
+    """
+    Return the location of Airflow home.
+    :return: Airflow home location
+    :rtype: str
+    """
     return expand_env_var(os.environ.get('AIRFLOW_HOME', '~/airflow'))
 
 
-def get_airflow_config(airflow_home):
+def get_airflow_config(airflow_home: str) -> str:
+    """
+    Return the location of the Airflow config file, default to [airflow_home]/airflow.cfg if not set.
+    :param str airflow_home: Location of Airflow home
+    :return: Location of the Airflow config file
+    :rtype: str
+    """
     if 'AIRFLOW_CONFIG' not in os.environ:
         return os.path.join(airflow_home, 'airflow.cfg')
     return expand_env_var(os.environ['AIRFLOW_CONFIG'])
