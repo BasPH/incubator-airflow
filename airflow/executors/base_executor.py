@@ -17,6 +17,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""Base executor which all other executors should inherit."""
+
 from collections import OrderedDict
 
 # To avoid circular imports
@@ -30,6 +32,7 @@ PARALLELISM = configuration.conf.getint('core', 'PARALLELISM')
 
 
 class BaseExecutor(LoggingMixin):
+    """Base executor class which other executors should inherit."""
 
     def __init__(self, parallelism=PARALLELISM):
         """
@@ -46,12 +49,20 @@ class BaseExecutor(LoggingMixin):
         self.event_buffer = {}
 
     def start(self):  # pragma: no cover
-        """
-        Executors may need to get things started. For example LocalExecutor
-        starts N workers.
-        """
+        """Executors may need to get things started. For example LocalExecutor starts N workers."""
 
     def queue_command(self, simple_task_instance, command, priority=1, queue=None):
+        """
+        Place the given command on a queue.
+
+        :param simple_task_instance: The simplified task instance
+        :type simple_task_instance: airflow.utils.dag_processing.SimpleTaskInstance
+        :param str command: The command to execute
+        :param int priority: The priority of this task against other tasks. This allows the executor to
+            trigger higher priority tasks before others. The higher the number, the more important.
+        :param str queue: Which queue to target when running this job. Not all executors implement queue
+            management, the CeleryExecutor does support targeting specific queues.
+        """
         key = simple_task_instance.key
         if key not in self.queued_tasks and key not in self.running:
             self.log.info("Adding to queue: %s", command)
@@ -70,6 +81,20 @@ class BaseExecutor(LoggingMixin):
             ignore_ti_state=False,
             pool=None,
             cfg_path=None):
+        """
+        Place a given task instance on a queue.
+
+        :param task_instance:
+        :param mark_success:
+        :param pickle_id:
+        :param ignore_all_deps:
+        :param ignore_depends_on_past:
+        :param ignore_task_deps:
+        :param ignore_ti_state:
+        :param pool:
+        :param cfg_path:
+        """
+
         pool = pool or task_instance.pool
 
         # TODO (edgarRd): AIRFLOW-1985:
@@ -99,8 +124,7 @@ class BaseExecutor(LoggingMixin):
         :param task_instance: TaskInstance
         :return: True if the task is known to this executor
         """
-        if task_instance.key in self.queued_tasks or task_instance.key in self.running:
-            return True
+        return task_instance.key in self.queued_tasks or task_instance.key in self.running
 
     def sync(self):
         """
@@ -109,6 +133,8 @@ class BaseExecutor(LoggingMixin):
         """
 
     def heartbeat(self):
+        """Heartbeat for monitoring purposes."""
+
         # Triggering new jobs
         if not self.parallelism:
             open_slots = len(self.queued_tasks)
@@ -134,10 +160,9 @@ class BaseExecutor(LoggingMixin):
 
     def trigger_tasks(self, open_slots):
         """
-        Trigger tasks
+        Execute n tasks, depending on whether the number of open slots or tasks in the queue is lowest.
 
         :param open_slots: Number of open slots
-        :return:
         """
         sorted_queue = sorted(
             [(k, v) for k, v in self.queued_tasks.items()],
@@ -153,21 +178,37 @@ class BaseExecutor(LoggingMixin):
                                executor_config=simple_ti.executor_config)
 
     def change_state(self, key, state):
+        """
+        Change the state of a key.
+
+        :param key: Key to identify a task instance
+        :param state: Desired state
+        """
+
         self.log.debug("Changing state: %s", key)
         self.running.pop(key, None)
         self.event_buffer[key] = state
 
     def fail(self, key):
+        """
+        Set the state of a key to State.FAILED.
+
+        :param key: Task instance identification key
+        """
         self.change_state(key, State.FAILED)
 
     def success(self, key):
+        """
+        Set the state of a key to State.SUCCESS.
+
+        :param key: Task instance identification key
+        """
         self.change_state(key, State.SUCCESS)
 
     def get_event_buffer(self, dag_ids=None):
         """
-        Returns and flush the event buffer. In case dag_ids is specified
-        it will only return and flush events for the given dag_ids. Otherwise
-        it returns and flushes all
+        Return and flush the event buffer. In case dag_ids is specified it will only return and flush events
+        for the given dag_ids. Otherwise it returns and flushes all.
 
         :param dag_ids: to dag_ids to return events for, if None returns all
         :return: a dict of events

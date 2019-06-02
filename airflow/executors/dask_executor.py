@@ -17,9 +17,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import distributed
+"""The DaskExecutor submits tasks to a Dask Distributed cluster."""
+
 import subprocess
 import warnings
+
+import distributed
 
 from airflow import configuration
 from airflow.executors.base_executor import BaseExecutor
@@ -40,6 +43,8 @@ class DaskExecutor(BaseExecutor):
         self.tls_ca = configuration.get('dask', 'tls_ca')
         self.tls_key = configuration.get('dask', 'tls_key')
         self.tls_cert = configuration.get('dask', 'tls_cert')
+        self.client = None
+        self.futures = None
         super().__init__(parallelism=0)
 
     def start(self):

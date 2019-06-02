@@ -16,6 +16,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 """
 LocalExecutor runs tasks by spawning processes in a controlled fashion in different
 modes. Given that BaseExecutor has the option to receive a `parallelism` parameter to
@@ -117,14 +118,24 @@ class QueuedLocalWorker(LocalWorker):
 
 class LocalExecutor(BaseExecutor):
     """
-    LocalExecutor executes tasks locally in parallel. It uses the
-    multiprocessing Python library and queues to parallelize the execution
-    of tasks.
+    LocalExecutor executes tasks locally in parallel. It uses the multiprocessing Python library and queues
+    to parallelize the execution of tasks.
     """
 
+    def __init__(self):
+        self.manager = None
+        self.result_queue = None
+        self.workers = None
+        self.workers_used = None
+        self.workers_active = None
+        self.impl = None
+        super().__init__()
+
     class _UnlimitedParallelism:
-        """Implements LocalExecutor with unlimited parallelism, starting one process
-        per each command to execute."""
+        """
+        Wrapper for LocalExecutor with unlimited parallelism, starting one process per each command to
+        execute.
+        """
 
         def __init__(self, executor):
             """
@@ -134,6 +145,7 @@ class LocalExecutor(BaseExecutor):
             self.executor = executor
 
         def start(self):
+            """Set the executor to an initial state."""
             self.executor.workers_used = 0
             self.executor.workers_active = 0
 
@@ -152,23 +164,28 @@ class LocalExecutor(BaseExecutor):
             local_worker.start()
 
         def sync(self):
+            """Process remaining work and wait for result_queue to be empty."""
             while not self.executor.result_queue.empty():
                 results = self.executor.result_queue.get()
                 self.executor.change_state(*results)
                 self.executor.workers_active -= 1
 
         def end(self):
+            """Wait for all tasks to finish."""
             while self.executor.workers_active > 0:
                 self.executor.sync()
 
     class _LimitedParallelism:
-        """Implements LocalExecutor with limited parallelism using a task queue to
-        coordinate work distribution."""
+        """
+        Wrapper for LocalExecutor with limited parallelism using a task queue to coordinate work distribution.
+        """
 
         def __init__(self, executor):
+            self.queue = None
             self.executor = executor
 
         def start(self):
+            """Start the executor."""
             self.queue = self.executor.manager.Queue()
             self.executor.workers = [
                 QueuedLocalWorker(self.queue, self.executor.result_queue)
@@ -177,8 +194,8 @@ class LocalExecutor(BaseExecutor):
 
             self.executor.workers_used = len(self.executor.workers)
 
-            for w in self.executor.workers:
-                w.start()
+            for worker in self.executor.workers:
+                worker.start()
 
         def execute_async(self, key, command):
             """
@@ -190,6 +207,7 @@ class LocalExecutor(BaseExecutor):
             self.queue.put((key, command))
 
         def sync(self):
+            """Process remaining work and wait for result_queue to be empty."""
             while True:
                 try:
                     results = self.executor.result_queue.get_nowait()
@@ -201,6 +219,8 @@ class LocalExecutor(BaseExecutor):
                     break
 
         def end(self):
+            """Stop the executor gracefully by stopping and waiting for all tasks to finish."""
+
             # Sending poison pill to all worker
             for _ in self.executor.workers:
                 self.queue.put((None, None))

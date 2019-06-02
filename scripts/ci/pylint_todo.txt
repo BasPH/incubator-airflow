@@ -174,13 +174,7 @@
 ./airflow/contrib/utils/sendgrid.py
 ./airflow/contrib/utils/weekday.py
 ./airflow/exceptions.py
-./airflow/executors/base_executor.py
-./airflow/executors/celery_executor.py
-./airflow/executors/dask_executor.py
-./airflow/executors/kubernetes_executor.py
-./airflow/executors/local_executor.py
-./airflow/executors/sequential_executor.py
-./airflow/executors/__init__.py
+./airflow/hooks/__init__.py
 ./airflow/hooks/base_hook.py
 ./airflow/hooks/dbapi_hook.py
 ./airflow/hooks/docker_hook.py

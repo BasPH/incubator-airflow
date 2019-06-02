@@ -17,6 +17,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The SequentialExecutor's main purpose is for testing and getting up and running quickly. It will run tasks
+sequentially one by one, and is therefore not fast and thus not very useful for production purposes.
+"""
+
 import subprocess
 
 from airflow.executors.base_executor import BaseExecutor

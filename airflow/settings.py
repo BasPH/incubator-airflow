@@ -310,3 +310,6 @@ WEB_COLORS = {'LIGHTBLUE': '#4d9de0',
 
 # Used by DAG context_managers
 CONTEXT_MANAGER_DAG = None
+
+# Set here to keep one single executor instance (see https://stackoverflow.com/a/423401/3066428)
+EXECUTOR = None

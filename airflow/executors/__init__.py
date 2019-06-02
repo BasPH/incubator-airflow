@@ -17,13 +17,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+Executors for running Airflow tasks on various systems, on a single machine (e.g. Sequential/Local) or
+distributed (e.g. Celery/Kubernetes).
+"""
+
 import sys
-from airflow.utils.log.logging_mixin import LoggingMixin
-from airflow import configuration
+
+from airflow import configuration, settings
 from airflow.exceptions import AirflowException
-from airflow.executors.base_executor import BaseExecutor # noqa
+from airflow.executors.base_executor import BaseExecutor  # noqa: F401
 from airflow.executors.local_executor import LocalExecutor
 from airflow.executors.sequential_executor import SequentialExecutor
+from airflow.utils.log.logging_mixin import LoggingMixin
 
 DEFAULT_EXECUTOR = None
 
@@ -33,27 +39,30 @@ def _integrate_plugins():
     from airflow.plugins_manager import executors_modules
     for executors_module in executors_modules:
         sys.modules[executors_module.__name__] = executors_module
-        globals()[executors_module._name] = executors_module
+        globals()[executors_module._name] = executors_module  # pylint: disable=protected-access
 
 
 def get_default_executor():
-    """Creates a new instance of the configured executor if none exists and returns it"""
-    global DEFAULT_EXECUTOR
+    """
+    Get the configured executor. Returns cached executor if already created, otherwise initializes a new
+    executor.
 
-    if DEFAULT_EXECUTOR is not None:
-        return DEFAULT_EXECUTOR
+    :return: Subclass of BaseExecutor
+    :rtype: airflow.executors.BaseExecutor
+    """
+
+    if settings.EXECUTOR is not None:
+        return settings.EXECUTOR
 
     executor_name = configuration.conf.get('core', 'EXECUTOR')
-
-    DEFAULT_EXECUTOR = _get_executor(executor_name)
-
+    settings.EXECUTOR = _get_executor(executor_name)
     log = LoggingMixin().log
     log.info("Using executor %s", executor_name)
-
-    return DEFAULT_EXECUTOR
+    return settings.EXECUTOR
 
 
 class Executors:
+    """Mapping from executor class to executor name."""
     LocalExecutor = "LocalExecutor"
     SequentialExecutor = "SequentialExecutor"
     CeleryExecutor = "CeleryExecutor"
@@ -63,9 +72,8 @@ class Executors:
 
 def _get_executor(executor_name):
     """
-    Creates a new instance of the named executor.
-    In case the executor name is not know in airflow,
-    look for it in the plugins
+    Creates a new instance of the named executor. In case the executor name is not know in Airflow, look for
+    it in the plugins.
     """
     if executor_name == Executors.LocalExecutor:
         return LocalExecutor()
