@@ -17,9 +17,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""Run DAGs for gathering operational metrics for the scheduler."""
+
 import logging
-import pandas as pd
 import sys
+
+import pandas as pd
 
 from airflow import configuration, settings
 from airflow.jobs import SchedulerJob
@@ -29,7 +32,6 @@ from airflow.utils.state import State
 
 SUBDIR = 'scripts/perf/dags'
 DAG_IDS = ['perf_dag_1', 'perf_dag_2']
-MAX_RUNTIME_SECS = 6
 
 
 class SchedulerMetricsJob(SchedulerJob):
@@ -61,6 +63,10 @@ class SchedulerMetricsJob(SchedulerJob):
     __mapper_args__ = {
         'polymorphic_identity': 'SchedulerMetricsJob'
     }
+
+    def __init__(self, max_runtime_secs=6, *args, **kwargs):
+        self._max_runtime_secs = max_runtime_secs
+        super().__init__(*args, **kwargs)
 
     def print_stats(self):
         """
@@ -104,7 +110,7 @@ class SchedulerMetricsJob(SchedulerJob):
         """
         Override the scheduler heartbeat to determine when the test is complete
         """
-        super(SchedulerMetricsJob, self).heartbeat()
+        super().heartbeat()
         session = settings.Session()
         # Get all the relevant task instances
         TI = TaskInstance
@@ -124,8 +130,7 @@ class SchedulerMetricsJob(SchedulerJob):
                                  for dag in dags for task in dag.tasks])
 
         if (len(successful_tis) == num_task_instances or
-                (timezone.utcnow() - self.start_date).total_seconds() >
-                MAX_RUNTIME_SECS):
+                (timezone.utcnow() - self.start_date).total_seconds() > self._max_runtime_secs):
             if len(successful_tis) == num_task_instances:
                 self.log.info("All tasks processed! Printing stats.")
             else:
@@ -140,12 +145,10 @@ def clear_dag_runs():
     Remove any existing DAG runs for the perf test DAGs.
     """
     session = settings.Session()
-    drs = session.query(DagRun).filter(
-        DagRun.dag_id.in_(DAG_IDS),
-    ).all()
-    for dr in drs:
-        logging.info('Deleting DagRun :: {}'.format(dr))
-        session.delete(dr)
+    dagruns = session.query(DagRun).filter(DagRun.dag_id.in_(DAG_IDS)).all()
+    for dagrun in dagruns:
+        logging.info('Deleting DagRun :: %s', dagrun)
+        session.delete(dagrun)
 
 
 def clear_dag_task_instances():
@@ -154,14 +157,9 @@ def clear_dag_task_instances():
     """
     session = settings.Session()
     TI = TaskInstance
-    tis = (
-        session
-        .query(TI)
-        .filter(TI.dag_id.in_(DAG_IDS))
-        .all()
-    )
+    tis = session.query(TI).filter(TI.dag_id.in_(DAG_IDS)).all()
     for ti in tis:
-        logging.info('Deleting TaskInstance :: {}'.format(ti))
+        logging.info('Deleting TaskInstance :: %s', ti)
         session.delete(ti)
     session.commit()
 
@@ -171,25 +169,20 @@ def set_dags_paused_state(is_paused):
     Toggle the pause state of the DAGs in the test.
     """
     session = settings.Session()
-    dms = session.query(DagModel).filter(
-        DagModel.dag_id.in_(DAG_IDS))
-    for dm in dms:
-        logging.info('Setting DAG :: {} is_paused={}'.format(dm, is_paused))
-        dm.is_paused = is_paused
+    dagmodels = session.query(DagModel).filter(DagModel.dag_id.in_(DAG_IDS))
+    for dagmodel in dagmodels:
+        logging.info('Setting DAG :: %s is_paused=%s', dagmodel, is_paused)
+        dagmodel.is_paused = is_paused
     session.commit()
 
 
 def main():
-    global MAX_RUNTIME_SECS
+    """Run a performance test."""
+    job_kwargs = {}
     if len(sys.argv) > 1:
-        try:
-            max_runtime_secs = int(sys.argv[1])
-            if max_runtime_secs < 1:
-                raise ValueError
-            MAX_RUNTIME_SECS = max_runtime_secs
-        except ValueError:
-            logging.error('Specify a positive integer for timeout.')
-            sys.exit(1)
+        job_kwargs["max_runtime_secs"] = int(sys.argv[1])
+        if job_kwargs["max_runtime_secs"] < 1:
+            raise ValueError('Specify a positive integer for timeout.')
 
     configuration.load_test_config()
 
@@ -197,7 +190,7 @@ def main():
     clear_dag_runs()
     clear_dag_task_instances()
 
-    job = SchedulerMetricsJob(dag_ids=DAG_IDS, subdir=SUBDIR)
+    job = SchedulerMetricsJob(dag_ids=DAG_IDS, subdir=SUBDIR, **job_kwargs)
     job.run()
 
 

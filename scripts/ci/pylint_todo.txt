@@ -540,9 +540,6 @@
 ./docs/exts/docroles.py
 ./docs/exts/exampleinclude.py
 ./docs/exts/removemarktransform.py
-./scripts/perf/dags/perf_dag_1.py
-./scripts/perf/dags/perf_dag_2.py
-./scripts/perf/scheduler_ops_metrics.py
 ./tests/__init__.py
 ./tests/api/__init__.py
 ./tests/api/client/__init__.py

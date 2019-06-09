@@ -17,10 +17,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import airflow
-from airflow.operators.bash_operator import BashOperator
-from airflow.models import DAG
+"""DAG used for performance tests."""
+
 from datetime import timedelta
+
+import airflow
+from airflow.models import DAG
+from airflow.operators.bash_operator import BashOperator
 
 args = {
     'owner': 'airflow',
@@ -40,9 +43,7 @@ task_1 = BashOperator(
 for i in range(2, 5):
     task = BashOperator(
         task_id='perf_task_{}'.format(i),
-        bash_command='''
-            sleep 5; echo "run_id={{ run_id }} | dag_run={{ dag_run }}"
-        ''',
+        bash_command='sleep 5; echo "run_id={{ run_id }} | dag_run={{ dag_run }}"',
         dag=dag)
     task.set_upstream(task_1)
 
