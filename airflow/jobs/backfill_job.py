@@ -16,7 +16,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+
+"""Job responsible for backfilling historical tasks."""
 
 import time
 from collections import OrderedDict
@@ -32,12 +33,12 @@ from airflow.exceptions import (
     PoolNotFound,
     TaskConcurrencyLimitReached,
 )
+from airflow.jobs.base_job import BaseJob
 from airflow.models import DAG, DagPickle, DagRun
 from airflow.ti_deps.dep_context import DepContext, RUN_DEPS
 from airflow.utils import timezone
 from airflow.utils.configuration import tmp_configuration_copy
 from airflow.utils.db import provide_session
-from airflow.jobs.base_job import BaseJob
 from airflow.utils.state import State
 
 
@@ -66,7 +67,7 @@ class BackfillJob(BaseJob):
         it easier to pass it around.
         """
         # TODO(edgarRd): AIRFLOW-1444: Add consistency check on counts
-        def __init__(self,
+        def __init__(self,  # pylint: disable=too-many-arguments
                      to_run=None,
                      running=None,
                      skipped=None,
@@ -115,9 +116,9 @@ class BackfillJob(BaseJob):
             self.finished_runs = finished_runs
             self.total_runs = total_runs
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
             self,
-            dag,
+            dag: DAG,
             start_date=None,
             end_date=None,
             mark_success=False,
@@ -127,7 +128,7 @@ class BackfillJob(BaseJob):
             pool=None,
             delay_on_limit_secs=1.0,
             verbose=False,
-            conf=None,
+            conf_=None,
             rerun_failed_tasks=False,
             run_backwards=False,
             *args, **kwargs):
@@ -151,8 +152,8 @@ class BackfillJob(BaseJob):
         :param delay_on_limit_secs:
         :param verbose:
         :type verbose: flag to whether display verbose message to backfill console
-        :param conf: a dictionary which user could pass k-v pairs for backfill
-        :type conf: dictionary
+        :param conf_: a dictionary which user could pass k-v pairs for backfill
+        :type conf_: dictionary
         :param rerun_failed_tasks: flag to whether to
                                    auto rerun the failed task in backfill
         :type rerun_failed_tasks: bool
@@ -172,7 +173,7 @@ class BackfillJob(BaseJob):
         self.pool = pool
         self.delay_on_limit_secs = delay_on_limit_secs
         self.verbose = verbose
-        self.conf = conf
+        self.conf = conf_
         self.rerun_failed_tasks = rerun_failed_tasks
         self.run_backwards = run_backwards
         super().__init__(*args, **kwargs)
@@ -249,13 +250,12 @@ class BackfillJob(BaseJob):
 
             self.log.debug("Executor state: %s task %s", state, ti)
 
-            if state == State.FAILED or state == State.SUCCESS:
-                if ti.state == State.RUNNING or ti.state == State.QUEUED:
-                    msg = ("Executor reports task instance {} finished ({}) "
-                           "although the task says its {}. Was the task "
-                           "killed externally?".format(ti, state, ti.state))
-                    self.log.error(msg)
-                    ti.handle_failure(msg)
+            if state in (State.FAILED, State.SUCCESS) and ti.state in (State.RUNNING, State.QUEUED):
+                msg = ("Executor reports task instance {} finished ({}) "
+                       "although the task says its {}. Was the task "
+                       "killed externally?".format(ti, state, ti.state))
+                self.log.error(msg)
+                ti.handle_failure(msg)
 
     @provide_session
     def _get_dag_run(self, run_date, session=None):
@@ -273,10 +273,7 @@ class BackfillJob(BaseJob):
         run_id = BackfillJob.ID_FORMAT_PREFIX.format(run_date.isoformat())
 
         # consider max_active_runs but ignore when running subdags
-        respect_dag_max_active_limit = (True
-                                        if (self.dag.schedule_interval and
-                                            not self.dag.is_subdag)
-                                        else False)
+        respect_dag_max_active_limit = self.dag.schedule_interval and not self.dag.is_subdag
 
         current_active_dag_count = self.dag.get_num_active_runs(external_trigger=False)
 
@@ -286,7 +283,7 @@ class BackfillJob(BaseJob):
                           execution_date=run_date,
                           session=session)
 
-        if run is not None and len(run) > 0:
+        if run:
             run = run[0]
             if run.state == State.RUNNING:
                 respect_dag_max_active_limit = False
@@ -370,7 +367,7 @@ class BackfillJob(BaseJob):
         )
 
     @provide_session
-    def _process_backfill_task_instances(self,
+    def _process_backfill_task_instances(self,  # pylint: disable=too-many-statements
                                          ti_status,
                                          executor,
                                          pickle_id,
@@ -396,8 +393,7 @@ class BackfillJob(BaseJob):
 
         executed_run_dates = []
 
-        while ((len(ti_status.to_run) > 0 or len(ti_status.running) > 0) and
-                len(ti_status.deadlocked) == 0):
+        while (ti_status.to_run or ti_status.running) and not ti_status.deadlocked:
             self.log.debug("*** Clearing out not_ready list ***")
             ti_status.not_ready.clear()
 
@@ -406,7 +402,7 @@ class BackfillJob(BaseJob):
             # determined deadlocked while they are actually
             # waiting for their upstream to finish
             @provide_session
-            def _per_task_process(task, key, ti, session=None):
+            def _per_task_process(task, key, ti, session=None):  # pylint: disable=too-many-return-statements
                 ti.refresh_from_db()
 
                 task = self.dag.get_task(ti.task_id)
@@ -473,7 +469,7 @@ class BackfillJob(BaseJob):
 
                 # Is the task runnable? -- then run it
                 # the dependency checker can change states of tis
-                if ti.are_dependencies_met(
+                if ti.are_dependencies_met(  # pylint: disable=too-many-nested-blocks
                         dep_context=backfill_context,
                         session=session,
                         verbose=self.verbose):
@@ -544,15 +540,13 @@ class BackfillJob(BaseJob):
 
             non_pool_slots = conf.getint('core', 'non_pooled_backfill_task_slot_count')
 
-            try:
+            try:  # pylint: disable=too-many-nested-blocks
                 for task in self.dag.topological_sort():
                     for key, ti in list(ti_status.to_run.items()):
                         if task.task_id != ti.task_id:
                             continue
                         if task.pool:
-                            pool = session.query(models.Pool) \
-                                .filter(models.Pool.pool == task.pool) \
-                                .first()
+                            pool = session.query(models.Pool).filter(models.Pool.pool == task.pool).first()
                             if not pool:
                                 raise PoolNotFound('Unknown pool: {}'.format(task.pool))
 
@@ -604,9 +598,7 @@ class BackfillJob(BaseJob):
             # If the set of tasks that aren't ready ever equals the set of
             # tasks to run and there are no running tasks then the backfill
             # is deadlocked
-            if (ti_status.not_ready and
-                    ti_status.not_ready == set(ti_status.to_run) and
-                    len(ti_status.running) == 0):
+            if ti_status.not_ready and ti_status.not_ready == set(ti_status.to_run) and not ti_status.running:
                 self.log.warning(
                     "Deadlock discovered for ti_status.to_run=%s",
                     ti_status.to_run.values()
@@ -747,7 +739,7 @@ class BackfillJob(BaseJob):
                         ",".join(tasks_that_depend_on_past)))
             run_dates = run_dates[::-1]
 
-        if len(run_dates) == 0:
+        if not run_dates:
             self.log.info("No run dates were found for the given dates and dag interval.")
             return
 
@@ -765,7 +757,7 @@ class BackfillJob(BaseJob):
 
         ti_status.total_runs = len(run_dates)  # total dag runs in backfill
 
-        try:
+        try:  # pylint: disable=too-many-nested-blocks
             remaining_dates = ti_status.total_runs
             while remaining_dates > 0:
                 dates_to_process = [run_date for run_date in run_dates

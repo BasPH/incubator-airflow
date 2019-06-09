@@ -447,7 +447,8 @@ good-names=e,
            j,
            k,
            _,
-           ti  # Commonly used in Airflow as shorthand for taskinstance
+           ti,  # Commonly used in Airflow as shorthand for taskinstance
+           id  # Generally used as shorthand for identifier
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=no

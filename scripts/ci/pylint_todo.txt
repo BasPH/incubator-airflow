@@ -316,11 +316,6 @@
 ./airflow/hooks/sqlite_hook.py
 ./airflow/hooks/webhdfs_hook.py
 ./airflow/hooks/zendesk_hook.py
-./airflow/jobs/__init__.py
-./airflow/jobs/backfill_job.py
-./airflow/jobs/base_job.py
-./airflow/jobs/local_task_job.py
-./airflow/jobs/scheduler_job.py
 ./airflow/kubernetes/__init__.py
 ./airflow/kubernetes/kube_client.py
 ./airflow/kubernetes/kubernetes_request_factory/__init__.py

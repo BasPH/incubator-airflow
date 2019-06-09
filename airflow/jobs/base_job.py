@@ -16,21 +16,20 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+
+"""Base class for all jobs."""
 
 import getpass
 from time import sleep
+from typing import Optional
 
 from sqlalchemy import Column, Index, Integer, String, and_, or_
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.session import make_transient, Session
-from typing import Optional
 
 from airflow import configuration as conf
 from airflow import executors, models
-from airflow.exceptions import (
-    AirflowException,
-)
+from airflow.exceptions import AirflowException
 from airflow.models.base import Base, ID_LEN
 from airflow.stats import Stats
 from airflow.utils import helpers, timezone
@@ -124,24 +123,28 @@ class BaseJob(Base, LoggingMixin):
 
     @provide_session
     def kill(self, session=None):
+        """
+        Kill a given job by setting the end_date to utcnow() in the metastore, and calling on_kill() on the
+        operator.
+
+        :param session: SQLAlchemy ORM session
+        """
+
         job = session.query(BaseJob).filter(BaseJob.id == self.id).first()
         job.end_date = timezone.utcnow()
         try:
             self.on_kill()
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             self.log.error('on_kill() method failed: %s', str(e))
         session.merge(job)
         session.commit()
         raise AirflowException("Job shut down externally.")
 
     def on_kill(self):
-        """
-        Will be called when an external kill command is received
-        """
-        pass
+        """Will be called when an external kill command is received"""
 
     def heartbeat_callback(self, session=None):
-        pass
+        """Callable to implement and run on heartbeat, e.g. for collecting metrics."""
 
     def heartbeat(self):
         """
@@ -196,15 +199,17 @@ class BaseJob(Base, LoggingMixin):
             self.log.error("Scheduler heartbeat got an exception: %s", str(e))
 
     def run(self):
+        """Run the job."""
+
         Stats.incr(self.__class__.__name__.lower() + '_start', 1, 1)
         # Adding an entry in the DB
         with create_session() as session:
             self.state = State.RUNNING
             session.add(self)
             session.commit()
-            id_ = self.id
+            id_pre_transient = self.id
             make_transient(self)
-            self.id = id_
+            self.id = id_pre_transient
 
             try:
                 self._execute()
@@ -227,7 +232,7 @@ class BaseJob(Base, LoggingMixin):
         raise NotImplementedError("This method needs to be overridden")
 
     @provide_session
-    def reset_state_for_orphaned_tasks(self, filter_by_dag_run=None, session=None):
+    def reset_state_for_orphaned_tasks(self, filter_by_dag_run: models.DagRun = None, session=None):
         """
         This function checks if there are any tasks in the dagrun (or all)
         that have a scheduled state but are not known by the
@@ -238,6 +243,7 @@ class BaseJob(Base, LoggingMixin):
 
         :param filter_by_dag_run: the dag_run we want to process, None if all
         :type filter_by_dag_run: airflow.models.DagRun
+        :param session:
         :return: the TIs reset (in expired SQLAlchemy state)
         :rtype: list[airflow.models.TaskInstance]
         """
@@ -272,7 +278,7 @@ class BaseJob(Base, LoggingMixin):
             if ti.key not in queued_tis and ti.key not in running_tis:
                 tis_to_reset.append(ti)
 
-        if len(tis_to_reset) == 0:
+        if not tis_to_reset:
             return []
 
         def query(result, items):

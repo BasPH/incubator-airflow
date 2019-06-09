@@ -16,7 +16,11 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+
+"""
+Job responsible for the execution of a single task; starting the task, monitoring the state while running,
+and terminating any state after it has finished.
+"""
 
 import os
 import signal
@@ -26,15 +30,19 @@ from sqlalchemy.exc import OperationalError
 
 from airflow import configuration as conf
 from airflow.exceptions import AirflowException
+from airflow.jobs.base_job import BaseJob
 from airflow.stats import Stats
 from airflow.task.task_runner import get_task_runner
 from airflow.utils.db import provide_session
 from airflow.utils.net import get_hostname
-from airflow.jobs.base_job import BaseJob
 from airflow.utils.state import State
 
 
 class LocalTaskJob(BaseJob):
+    """
+    LocalTaskJob manages the execution of one single task; starting the task, monitoring the state while
+    running, and terminating any state after it has finished.
+    """
 
     __mapper_args__ = {
         'polymorphic_identity': 'LocalTaskJob'
@@ -61,10 +69,10 @@ class LocalTaskJob(BaseJob):
         self.pickle_id = pickle_id
         self.mark_success = mark_success
 
-        # terminating state is used so that a job don't try to
-        # terminate multiple times
+        # Terminating state is used so that a job doesn't try to terminate multiple times
         self.terminating = False
 
+        self.task_runner = None
         super().__init__(*args, **kwargs)
 
     def _execute(self):

@@ -16,7 +16,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+
+"""Import all jobs to allow importing directly from airflow.jobs."""
 
 from airflow.jobs.base_job import BaseJob  # noqa: F401
 from airflow.jobs.backfill_job import BackfillJob  # noqa: F401

@@ -1192,7 +1192,7 @@ class DAG(BaseDag, LoggingMixin):
             pool=pool,
             delay_on_limit_secs=delay_on_limit_secs,
             verbose=verbose,
-            conf=conf,
+            conf_=conf,
             rerun_failed_tasks=rerun_failed_tasks,
             run_backwards=run_backwards,
         )

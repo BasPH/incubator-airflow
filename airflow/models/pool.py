@@ -40,7 +40,7 @@ class Pool(Base):
 
     @staticmethod
     @provide_session
-    def default_pool_open_slots(session):
+    def default_pool_open_slots(session=None):
         from airflow.models import TaskInstance as TI  # To avoid circular imports
         total_slots = conf.getint('core', 'non_pooled_task_slot_count')
         used_slots = session.query(func.count()).filter(

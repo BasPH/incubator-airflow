@@ -286,7 +286,7 @@ class BackfillJobTest(unittest.TestCase):
                           executor=executor,
                           start_date=DEFAULT_DATE,
                           end_date=DEFAULT_DATE + datetime.timedelta(days=2),
-                          conf=conf)
+                          conf_=conf)
         job.run()
 
         dr = DagRun.find(dag_id='test_backfill_conf')
