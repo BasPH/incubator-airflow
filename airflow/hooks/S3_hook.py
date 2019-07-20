@@ -16,15 +16,16 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
+import fnmatch
+import re
+from io import BytesIO
+from urllib.parse import urlparse
+
 from botocore.exceptions import ClientError
 
 from airflow.exceptions import AirflowException
 from airflow.contrib.hooks.aws_hook import AwsHook
-
-from six import BytesIO
-from urllib.parse import urlparse
-import re
-import fnmatch
 
 
 class S3Hook(AwsHook):

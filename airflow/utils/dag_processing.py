@@ -28,12 +28,11 @@ import zipfile
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from collections import namedtuple
-from importlib import import_module
+from importlib import import_module, reload
 import enum
 from queue import Empty
 
 import psutil
-from six.moves import reload_module
 from tabulate import tabulate
 
 # To avoid circular imports
@@ -564,8 +563,8 @@ class DagFileProcessorAgent(LoggingMixin):
             os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER'] = 'True'
             # Replicating the behavior of how logging module was loaded
             # in logging_config.py
-            reload_module(import_module(airflow.settings.LOGGING_CLASS_PATH.rsplit('.', 1)[0]))
-            reload_module(airflow.settings)
+            reload(import_module(airflow.settings.LOGGING_CLASS_PATH.rsplit('.', 1)[0]))
+            reload(airflow.settings)
             airflow.settings.initialize()
             del os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER']
             processor_manager = DagFileProcessorManager(dag_directory,

@@ -17,8 +17,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import six
+
 import unittest
+from io import StringIO
 
 from airflow import AirflowException
 from airflow.models import Connection
@@ -168,8 +169,8 @@ class TestSparkSubmitHook(unittest.TestCase):
     @patch('airflow.contrib.hooks.spark_submit_hook.subprocess.Popen')
     def test_spark_process_runcmd(self, mock_popen):
         # Given
-        mock_popen.return_value.stdout = six.StringIO('stdout')
-        mock_popen.return_value.stderr = six.StringIO('stderr')
+        mock_popen.return_value.stdout = StringIO('stdout')
+        mock_popen.return_value.stderr = StringIO('stderr')
         mock_popen.return_value.wait.return_value = 0
 
         # When
@@ -562,8 +563,8 @@ class TestSparkSubmitHook(unittest.TestCase):
     @patch('airflow.contrib.hooks.spark_submit_hook.subprocess.Popen')
     def test_yarn_process_on_kill(self, mock_popen):
         # Given
-        mock_popen.return_value.stdout = six.StringIO('stdout')
-        mock_popen.return_value.stderr = six.StringIO('stderr')
+        mock_popen.return_value.stdout = StringIO('stdout')
+        mock_popen.return_value.stderr = StringIO('stderr')
         mock_popen.return_value.poll.return_value = None
         mock_popen.return_value.wait.return_value = 0
         log_lines = [
@@ -616,8 +617,8 @@ class TestSparkSubmitHook(unittest.TestCase):
     @patch('airflow.contrib.hooks.spark_submit_hook.subprocess.Popen')
     def test_k8s_process_on_kill(self, mock_popen, mock_client_method):
         # Given
-        mock_popen.return_value.stdout = six.StringIO('stdout')
-        mock_popen.return_value.stderr = six.StringIO('stderr')
+        mock_popen.return_value.stdout = StringIO('stdout')
+        mock_popen.return_value.stderr = StringIO('stderr')
         mock_popen.return_value.poll.return_value = None
         mock_popen.return_value.wait.return_value = 0
         client = mock_client_method.return_value

@@ -31,11 +31,11 @@ from datetime import timedelta
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from io import StringIO
 from tempfile import NamedTemporaryFile
 from time import sleep
 from unittest import mock
 
-import six
 import sqlalchemy
 from dateutil.relativedelta import relativedelta
 from numpy.testing import assert_array_almost_equal
@@ -1163,7 +1163,7 @@ class CliTests(unittest.TestCase):
             ])
             cli.users_create(args)
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.users_list(self.parser.parse_args(['users', 'list']))
             stdout = mock_stdout.getvalue()
         for i in range(0, 3):
@@ -1389,7 +1389,7 @@ class CliTests(unittest.TestCase):
         self.appbuilder.sm.add_role('FakeTeamB')
 
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.roles_list(self.parser.parse_args(['roles', 'list']))
             stdout = mock_stdout.getvalue()
 
@@ -1430,7 +1430,7 @@ class CliTests(unittest.TestCase):
 
     def test_cli_connections_list(self):
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.connections_list(self.parser.parse_args(['connections', 'list']))
             stdout = mock_stdout.getvalue()
         conns = [[x.strip("'") for x in re.findall(r"'\w+'", line)[:2]]
@@ -1460,7 +1460,7 @@ class CliTests(unittest.TestCase):
         # Add connections:
         uri = 'postgresql://airflow:airflow@host:5432/airflow'
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.connections_add(self.parser.parse_args(
                 ['connections', 'add', 'new1',
                  '--conn_uri=%s' % uri]))
@@ -1502,7 +1502,7 @@ class CliTests(unittest.TestCase):
 
         # Attempt to add duplicate
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.connections_add(self.parser.parse_args(
                 ['connections', 'add', 'new1',
                  '--conn_uri=%s' % uri]))
@@ -1552,7 +1552,7 @@ class CliTests(unittest.TestCase):
 
         # Delete connections
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.connections_delete(self.parser.parse_args(
                 ['connections', 'delete', 'new1']))
             cli.connections_delete(self.parser.parse_args(
@@ -1589,7 +1589,7 @@ class CliTests(unittest.TestCase):
 
         # Attempt to delete a non-existing connnection
         with mock.patch('sys.stdout',
-                        new_callable=six.StringIO) as mock_stdout:
+                        new_callable=StringIO) as mock_stdout:
             cli.connections_delete(self.parser.parse_args(
                 ['connections', 'delete', 'fake']))
             stdout = mock_stdout.getvalue()

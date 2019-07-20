@@ -16,9 +16,11 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 import os
 import pathlib
-import six
+from importlib import reload
+
 import sys
 import tempfile
 
@@ -256,7 +258,7 @@ class TestLoggingSettings(unittest.TestCase):
             ('core', 'remote_log_conn_id'): 'some_wasb',
             ('core', 'remote_base_log_folder'): 'wasb://some-folder',
         }):
-            six.moves.reload_module(airflow_local_settings)
+            reload(airflow_local_settings)
             configure_logging()
 
         logger = logging.getLogger('airflow.task')

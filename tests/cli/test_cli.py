@@ -18,9 +18,9 @@
 # under the License.
 #
 
-from six import StringIO
 import sys
 import unittest
+from io import StringIO
 from unittest.mock import patch, Mock, MagicMock
 
 from datetime import datetime, timedelta, time
