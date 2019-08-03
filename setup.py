@@ -23,6 +23,7 @@ import io
 import logging
 import os
 import subprocess
+import sys
 import unittest
 
 from setuptools import setup, find_packages, Command
@@ -36,6 +37,8 @@ spec = importlib.util.spec_from_file_location("airflow.version", os.path.join('a
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 version = mod.version
+
+PY3 = sys.version_info[0] == 3
 
 # noinspection PyUnboundLocalVariable
 try:
@@ -268,7 +271,6 @@ devel = [
     'jira',
     'mongomock',
     'moto==1.3.5',
-    'mypy',
     'nose',
     'nose-ignore-docstring==0.2',
     'nose-timer',
@@ -282,6 +284,11 @@ devel = [
     'requests_mock',
 ]
 
+if PY3:
+    devel += ['mypy']
+else:
+    devel += ['unittest2']
+
 devel_minreq = devel + kubernetes + mysql + doc + password + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
 devel_all = (sendgrid + devel + all_dbs + doc + samba + slack + crypto + oracle +
@@ -289,8 +296,13 @@ devel_all = (sendgrid + devel + all_dbs + doc + samba + slack + crypto + oracle 
              datadog + zendesk + jdbc + ldap + kerberos + password + webhdfs + jenkins +
              druid + pinot + segment + snowflake + elasticsearch +
              atlas + azure + aws + salesforce + cgroups + papermill + virtualenv)
-devel_ci = [package for package in devel_all
-            if package not in ["snakebite>=2.7.8", "snakebite[kerberos]>=2.7.8"]]
+
+# Snakebite & Google Cloud Dataflow are not Python 3 compatible :'(
+if PY3:
+    devel_ci = [package for package in devel_all if package not in
+                ['snakebite>=2.7.8', 'snakebite[kerberos]>=2.7.8']]
+else:
+    devel_ci = devel_all
 
 
 def do_setup():

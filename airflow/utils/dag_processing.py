@@ -16,7 +16,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import importlib
 import logging
 import multiprocessing
 import os
@@ -34,7 +34,6 @@ from typing import Optional
 
 import psutil
 from setproctitle import setproctitle
-from six.moves import reload_module
 from tabulate import tabulate
 
 # To avoid circular imports
@@ -584,8 +583,8 @@ class DagFileProcessorAgent(LoggingMixin):
         os.environ['AIRFLOW__CORE__COLORED_CONSOLE_LOG'] = 'False'
         # Replicating the behavior of how logging module was loaded
         # in logging_config.py
-        reload_module(import_module(airflow.settings.LOGGING_CLASS_PATH.rsplit('.', 1)[0]))
-        reload_module(airflow.settings)
+        importlib.reload(import_module(airflow.settings.LOGGING_CLASS_PATH.rsplit('.', 1)[0]))
+        importlib.reload(airflow.settings)
         airflow.settings.initialize()
         del os.environ['CONFIG_PROCESSOR_MANAGER_LOGGER']
         processor_manager = DagFileProcessorManager(dag_directory,

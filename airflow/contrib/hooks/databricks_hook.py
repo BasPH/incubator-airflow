@@ -17,6 +17,9 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
+from urllib.parse import urlparse
+
 import requests
 
 from airflow import __version__
@@ -25,7 +28,6 @@ from airflow.hooks.base_hook import BaseHook
 from requests import exceptions as requests_exceptions
 from requests.auth import AuthBase
 from time import sleep
-from six.moves.urllib import parse as urlparse
 
 RESTART_CLUSTER_ENDPOINT = ("POST", "api/2.0/clusters/restart")
 START_CLUSTER_ENDPOINT = ("POST", "api/2.0/clusters/start")
@@ -88,7 +90,7 @@ class DatabricksHook(BaseHook):
             assert h._parse_host('xx.cloud.databricks.com') == 'xx.cloud.databricks.com'
 
         """
-        urlparse_host = urlparse.urlparse(host).hostname
+        urlparse_host = urlparse(host).hostname
         if urlparse_host:
             # In this case, host = https://xx.cloud.databricks.com
             return urlparse_host
