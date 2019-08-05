@@ -1208,7 +1208,6 @@ class TaskInstance(Base, LoggingMixin):
             'end_date': ds,
             'execution_date': pendulum.instance(self.execution_date),
             'inlets': task.inlets,
-            'latest_date': ds,
             'macros': macros,
             'next_ds': next_ds,
             'next_ds_nodash': next_ds_nodash,
