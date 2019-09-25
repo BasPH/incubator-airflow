@@ -446,9 +446,7 @@ class TestBaseSensor(unittest.TestCase):
         date1 = timezone.utcnow()
         with freeze_time(date1):
             for dt in self.dag.date_range(DEFAULT_DATE, end_date=DEFAULT_DATE):
-                TaskInstance(sensor, dt).run(
-                    ignore_ti_state=True,
-                    test_mode=True)
+                TaskInstance(sensor, dt).run(ignore_ti_state=True, test_mode=True)
         tis = dr.get_task_instances()
         self.assertEqual(len(tis), 2)
         for ti in tis:

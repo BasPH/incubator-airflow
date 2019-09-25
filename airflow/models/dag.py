@@ -19,6 +19,7 @@
 
 import copy
 import functools
+import itertools
 import os
 import pickle
 import re
@@ -27,7 +28,7 @@ import traceback
 import warnings
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
-from typing import Union, Optional, Iterable, Dict, Type, Callable, List, TYPE_CHECKING
+from typing import Union, Optional, Iterable, Dict, Type, Callable, List, TYPE_CHECKING, Generator
 
 import jinja2
 import pendulum
@@ -45,8 +46,8 @@ from airflow.models.dagbag import DagBag
 from airflow.models.dagpickle import DagPickle
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance, clear_task_instances
+from airflow.utils import dates as date_utils
 from airflow.utils import timezone
-from airflow.utils.dates import cron_presets, date_range as utils_date_range
 from airflow.utils.db import provide_session
 from airflow.utils.helpers import validate_key
 from airflow.utils.log.logging_mixin import LoggingMixin
@@ -281,8 +282,8 @@ class DAG(BaseDag, LoggingMixin):
             )
 
         self.schedule_interval = schedule_interval
-        if isinstance(schedule_interval, str) and schedule_interval in cron_presets:
-            self._schedule_interval = cron_presets.get(schedule_interval)  # type: Optional[ScheduleInterval]
+        if isinstance(schedule_interval, str) and schedule_interval in date_utils.cron_presets:
+            self._schedule_interval = date_utils.cron_presets.get(schedule_interval)  # type: Optional[ScheduleInterval]
         elif schedule_interval == '@once':
             self._schedule_interval = None
         else:
@@ -365,12 +366,15 @@ class DAG(BaseDag, LoggingMixin):
         else:
             return self._default_view
 
-    def date_range(self, start_date, num=None, end_date=timezone.utcnow()):
+    def date_range(self, start_date, num=None, end_date=timezone.utcnow()) -> Generator:
         if num:
-            end_date = None
-        return utils_date_range(
-            start_date=start_date, end_date=end_date,
-            num=num, delta=self._schedule_interval)
+            yield itertools.islice(
+                date_utils.date_range(start_date=start_date, interval=self._schedule_interval), stop=num
+            )
+        else:
+            yield date_utils.date_range(
+                start_date=start_date, interval=self._schedule_interval, end_date=end_date
+            )
 
     def is_fixed_time_schedule(self):
         """

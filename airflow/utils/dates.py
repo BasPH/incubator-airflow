@@ -17,11 +17,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from airflow.utils import timezone
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta  # noqa: F401 for doctest
+from typing import Union, Generator
 
 from croniter import croniter
+from dateutil.relativedelta import relativedelta  # noqa: F401 for doctest
+from pendulum import Pendulum
+
+from airflow.utils import timezone
 
 cron_presets = {
     '@hourly': '0 * * * *',
@@ -32,82 +35,82 @@ cron_presets = {
 }
 
 
-def date_range(start_date, end_date=None, num=None, delta=None):
+def date_range(
+    start_date: Union[datetime, Pendulum],
+    interval: Union[timedelta, relativedelta, str],
+    end_date: Union[datetime, Pendulum] = None,
+) -> Generator:
     """
-    Get a set of dates as a list based on a start, end and delta, delta
-    can be something that can be added to `datetime.datetime`
-    or a cron expression as a `str`
+    Get a range of dates between a given start and (optional) end date, with a given interval (just like
+    builtins.range, the start_date is included in the result and the end_date is not). To get dates in reverse
+    order, either switch the start_date and end_date, or call reversed on the result:
+    ``reversed(date_range(...))``. The end_date is optional; the result is a generator and simply calling
+    next() will return the next datetime. The result type equals the type of start_date.
 
-    .. code-block:: python
+    Examples:
+    date_range(datetime(2019, 1, 1), timedelta(days=1), datetime(2019, 1, 4)) -> jan 1, 2 & 3
+    date_range(datetime(2019, 1, 1), "0 0 * * *", datetime(2019, 1, 4))       -> jan 1, 2 & 3
+    date_range(datetime(2019, 1, 1), "0 0 * * *", datetime(2019, 1, 1))       -> no result
+    date_range(Pendulum(2019, 1, 1), "0 0 * * *", Pendulum(2019, 1, 4))       -> jan 1, 2 & 3 in Pendulum
 
-        date_range(datetime(2016, 1, 1), datetime(2016, 1, 3), delta=timedelta(1))
-            [datetime.datetime(2016, 1, 1, 0, 0), datetime.datetime(2016, 1, 2, 0, 0),
-            datetime.datetime(2016, 1, 3, 0, 0)]
-        date_range(datetime(2016, 1, 1), datetime(2016, 1, 3), delta='0 0 * * *')
-            [datetime.datetime(2016, 1, 1, 0, 0), datetime.datetime(2016, 1, 2, 0, 0),
-            datetime.datetime(2016, 1, 3, 0, 0)]
-        date_range(datetime(2016, 1, 1), datetime(2016, 3, 3), delta="0 0 0 * *")
-            [datetime.datetime(2016, 1, 1, 0, 0), datetime.datetime(2016, 2, 1, 0, 0),
-            datetime.datetime(2016, 3, 1, 0, 0)]
+    End date is optional:
+        generator = dates.date_range(datetime(2019, 1, 1), timedelta(days=1))
+        result = list(next(generator) for _ in range(3))                      -> jan 1, 2 & 3
 
-    :param start_date: anchor date to start the series from
-    :type start_date: datetime.datetime
-    :param end_date: right boundary for the date range
-    :type end_date: datetime.datetime
-    :param num: alternatively to end_date, you can specify the number of
-        number of entries you want in the range. This number can be negative,
-        output will always be sorted regardless
-    :type num: int
+    :param start_date: starting datetime
+    :param interval: time interval
+    :param end_date: ending datetime (optional)
+    :return: Generator holding next datetime
     """
-    if not delta:
-        return []
-    if end_date and start_date > end_date:
-        raise Exception("Wait. start_date needs to be before end_date")
-    if end_date and num:
-        raise Exception("Wait. Either specify end_date OR num")
-    if not end_date and not num:
-        end_date = timezone.utcnow()
 
-    delta_iscron = False
-    tz = start_date.tzinfo
-    if isinstance(delta, str):
-        delta_iscron = True
-        start_date = timezone.make_naive(start_date, tz)
-        cron = croniter(delta, start_date)
-    elif isinstance(delta, timedelta):
-        delta = abs(delta)
-    dates = []
-    if end_date:
-        if timezone.is_naive(start_date):
-            end_date = timezone.make_naive(end_date, tz)
-        while start_date <= end_date:
-            if timezone.is_naive(start_date):
-                dates.append(timezone.make_aware(start_date, tz))
-            else:
-                dates.append(start_date)
+    if not start_date == end_date:
+        yield start_date
 
-            if delta_iscron:
-                start_date = cron.get_next(datetime)
-            else:
-                start_date += delta
+    # Computing intervals depends on type of the given interval
+    if isinstance(interval, (timedelta, relativedelta)):
+        if not end_date:  # no end date, infinitely return next date
+            while True:
+                start_date += interval
+                yield start_date
+
+        if end_date >= start_date:  # end date after start date, return next date forward in time
+            while start_date < end_date:
+                start_date += interval
+                if start_date < end_date:
+                    yield start_date
+        else:  # end date before start date, return next date backwards in time
+            while start_date > end_date:
+                start_date -= interval
+                if start_date > end_date:
+                    yield start_date
+
+    elif isinstance(interval, str):
+        # Assume cron expression
+        cron = croniter(interval, start_date)
+
+        # croniter does not return Pendulum so we make the conversion back if original type was Pendulum
+        original_type = type(start_date)
+
+        next_dt = start_date
+        if end_date >= start_date:
+            while start_date < end_date and next_dt < end_date:
+                next_dt = cron.get_next(datetime)
+                if next_dt < end_date:
+                    if original_type == Pendulum:
+                        yield Pendulum.instance(next_dt)
+                    else:
+                        yield next_dt
+        else:
+            while start_date > end_date and next_dt > end_date:
+                next_dt = cron.get_prev(datetime)
+                if next_dt > end_date:
+                    if original_type == Pendulum:
+                        yield Pendulum.instance(next_dt)
+                    else:
+                        yield next_dt
+
     else:
-        for _ in range(abs(num)):
-            if timezone.is_naive(start_date):
-                dates.append(timezone.make_aware(start_date, tz))
-            else:
-                dates.append(start_date)
-
-            if delta_iscron:
-                if num > 0:
-                    start_date = cron.get_next(datetime)
-                else:
-                    start_date = cron.get_prev(datetime)
-            else:
-                if num > 0:
-                    start_date += delta
-                else:
-                    start_date -= delta
-    return sorted(dates)
+        raise TypeError("interval must be of types timedelta, relativedelta or string.")
 
 
 def round_time(dt, delta, start_date=timezone.make_aware(datetime.min)):
