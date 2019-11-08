@@ -915,3 +915,11 @@ class TestDag(unittest.TestCase):
             self.assertIn('t1', stdout_lines[0])
             self.assertIn('t2', stdout_lines[1])
             self.assertIn('t3', stdout_lines[2])
+
+    def test_duplicate_task_ids(self):
+        """Test if adding a task with already added task_id to a DAG raises an exception."""
+        dag = DAG("test", start_date=DEFAULT_DATE)
+        DummyOperator(task_id="task", dag=dag)
+
+        with self.assertRaises(AirflowException):
+            DummyOperator(task_id="task", dag=dag)

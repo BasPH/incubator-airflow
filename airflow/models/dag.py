@@ -24,7 +24,6 @@ import pickle
 import re
 import sys
 import traceback
-import warnings
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Callable, Dict, FrozenSet, Iterable, List, Optional, Type, Union
@@ -1163,13 +1162,19 @@ class DAG(BaseDag, LoggingMixin):
         for t in self.roots:
             get_downstream(t)
 
-    def add_task(self, task):
+    def add_task(self, task: "BaseOperator"):
         """
-        Add a task to the DAG
+        Add a task to the DAG.
 
-        :param task: the task you want to add
-        :type task: task
+        :param task: Task to add to the DAG
+        :type task: BaseOperator
         """
+
+        if task.task_id in self.task_dict:
+            raise AirflowException(
+                "Task '{}' already exists in the DAG, task ids must be unique.".format(task.task_id)
+            )
+
         if not self.start_date and not task.start_date:
             raise AirflowException("Task is missing the start_date parameter")
         # if the task has no start date, assign it the same as the DAG
@@ -1188,18 +1193,7 @@ class DAG(BaseDag, LoggingMixin):
         elif task.end_date and self.end_date:
             task.end_date = min(task.end_date, self.end_date)
 
-        if task.task_id in self.task_dict:
-            # TODO: raise an error in Airflow 2.0
-            warnings.warn(
-                'The requested task could not be added to the DAG because a '
-                'task with task_id {} is already in the DAG. Starting in '
-                'Airflow 2.0, trying to overwrite a task will raise an '
-                'exception.'.format(task.task_id),
-                category=PendingDeprecationWarning)
-        else:
-            self.task_dict[task.task_id] = task
-            task.dag = self
-
+        self.task_dict[task.task_id] = task
         self.task_count = len(self.task_dict)
 
     def add_tasks(self, tasks):
