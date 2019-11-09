@@ -53,13 +53,13 @@ class TestWasbBlobSensor(unittest.TestCase):
         self.assertEqual(sensor.check_options, {})
         self.assertEqual(sensor.timeout, self._config['timeout'])
 
-        sensor = WasbBlobSensor(
-            task_id='wasb_sensor',
+        sensor2 = WasbBlobSensor(
+            task_id='wasb_sensor2',
             dag=self.dag,
             check_options={'timeout': 2},
             **self._config
         )
-        self.assertEqual(sensor.check_options, {'timeout': 2})
+        self.assertEqual(sensor2.check_options, {'timeout': 2})
 
     @mock.patch('airflow.contrib.sensors.wasb_sensor.WasbHook',
                 autospec=True)
@@ -104,13 +104,13 @@ class TestWasbPrefixSensor(unittest.TestCase):
         self.assertEqual(sensor.check_options, {})
         self.assertEqual(sensor.timeout, self._config['timeout'])
 
-        sensor = WasbPrefixSensor(
-            task_id='wasb_sensor',
+        sensor2 = WasbPrefixSensor(
+            task_id='wasb_sensor2',
             dag=self.dag,
             check_options={'timeout': 2},
             **self._config
         )
-        self.assertEqual(sensor.check_options, {'timeout': 2})
+        self.assertEqual(sensor2.check_options, {'timeout': 2})
 
     @mock.patch('airflow.contrib.sensors.wasb_sensor.WasbHook',
                 autospec=True)
