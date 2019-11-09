@@ -309,8 +309,6 @@ def set_dag_run_state_to_success(dag, execution_date, commit=False, session=None
         _set_dag_run_state(dag.dag_id, execution_date, State.SUCCESS, session)
 
     # Mark all task instances of the dag run to success.
-    for task in dag.tasks:
-        task.dag = dag
     return set_state(tasks=dag.tasks, execution_date=execution_date,
                      state=State.SUCCESS, commit=commit, session=session)
 
@@ -344,13 +342,7 @@ def set_dag_run_state_to_failed(dag, execution_date, commit=False, session=None)
         TaskInstance.task_id.in_(task_ids)).filter(TaskInstance.state == State.RUNNING)
     task_ids_of_running_tis = [task_instance.task_id for task_instance in tis]
 
-    tasks = []
-    for task in dag.tasks:
-        if task.task_id not in task_ids_of_running_tis:
-            continue
-        task.dag = dag
-        tasks.append(task)
-
+    tasks = [task for task in dag.tasks if task.task_id in task_ids_of_running_tis]
     return set_state(tasks=tasks, execution_date=execution_date,
                      state=State.FAILED, commit=commit, session=session)
 
