@@ -166,34 +166,25 @@ class AirflowBaseView(BaseView):
 
 
 class Airflow(AirflowBaseView):
-    @expose('/health')
+    @expose("/health")
     def health(self):
-        """
-        An endpoint helping check the health status of the Airflow instance,
-        including metadatabase and scheduler.
-        """
+        """A health endpoint providing information about the status of the Airflow instance."""
 
-        payload = {
-            'metadatabase': {'status': 'unhealthy'}
+        result = {
+            "metadatabase": {"status": "healthy"},
+            "scheduler": {"status": "unhealthy", "latest_scheduler_heartbeat": None},
         }
 
-        latest_scheduler_heartbeat = None
-        scheduler_status = 'unhealthy'
-        payload['metadatabase'] = {'status': 'healthy'}
         try:
             scheduler_job = jobs.SchedulerJob.most_recent_job()
-
             if scheduler_job:
-                latest_scheduler_heartbeat = scheduler_job.latest_heartbeat.isoformat()
+                result["scheduler"]["latest_scheduler_heartbeat"] = scheduler_job.latest_heartbeat.isoformat()
                 if scheduler_job.is_alive():
-                    scheduler_status = 'healthy'
+                    result["scheduler"]["status"] = "healthy"
         except Exception:
-            payload['metadatabase']['status'] = 'unhealthy'
+            result["metadatabase"]["status"] = "unhealthy"
 
-        payload['scheduler'] = {'status': scheduler_status,
-                                'latest_scheduler_heartbeat': latest_scheduler_heartbeat}
-
-        return wwwutils.json_response(payload)
+        return wwwutils.json_response(result)
 
     @expose('/home')
     @has_access
