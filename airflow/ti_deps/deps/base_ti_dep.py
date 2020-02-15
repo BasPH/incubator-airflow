@@ -40,7 +40,7 @@ class BaseTIDep:
         pass
 
     def __eq__(self, other):
-        return type(self) == type(other)
+        return isinstance(self, type(other))
 
     def __hash__(self):
         return hash(type(self))
