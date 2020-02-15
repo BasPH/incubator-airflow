@@ -22,6 +22,8 @@ from airflow.utils.state import State
 
 
 class DagrunRunningDep(BaseTIDep):
+    """Check if the maximum number of active DAG runs is reached."""
+
     NAME = "Dagrun Running"
     IGNOREABLE = True
 

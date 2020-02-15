@@ -24,6 +24,8 @@ from airflow.utils.state import State
 
 
 class ReadyToRescheduleDep(BaseTIDep):
+    """Check if the task meets criteria to be rescheduled."""
+
     NAME = "Ready To Reschedule"
     IGNOREABLE = True
     IS_TASK_DEP = True

@@ -23,6 +23,8 @@ from airflow.utils.state import State
 
 
 class NotInRetryPeriodDep(BaseTIDep):
+    """Check if a task instance is valid to be retried."""
+
     NAME = "Not In Retry Period"
     IGNOREABLE = True
     IS_TASK_DEP = True

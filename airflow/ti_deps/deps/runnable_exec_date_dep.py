@@ -22,6 +22,8 @@ from airflow.utils.session import provide_session
 
 
 class RunnableExecDateDep(BaseTIDep):
+    """Check if a task is allowed to run for a given execution date."""
+
     NAME = "Execution Date"
     IGNOREABLE = True
 
