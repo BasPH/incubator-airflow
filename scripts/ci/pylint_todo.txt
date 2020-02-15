@@ -129,7 +129,6 @@
 ./airflow/ti_deps/deps/runnable_exec_date_dep.py
 ./airflow/ti_deps/deps/task_concurrency_dep.py
 ./airflow/ti_deps/deps/trigger_rule_dep.py
-./airflow/ti_deps/deps/valid_state_dep.py
 ./airflow/version.py
 ./airflow/www/api/experimental/endpoints.py
 ./airflow/www/app.py

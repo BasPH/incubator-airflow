@@ -16,24 +16,25 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from typing import Set
+
 from airflow.exceptions import AirflowException
 from airflow.ti_deps.deps.base_ti_dep import BaseTIDep
 from airflow.utils.session import provide_session
 
 
 class ValidStateDep(BaseTIDep):
+    """Ensures that a task instance's current state is in a given set of valid states."""
     NAME = "Task Instance State"
     IGNOREABLE = True
 
-    """
-    Ensures that the task instance's state is in a given set of valid states.
+    def __init__(self, valid_states: Set[str]):
+        """
+        Ensures that the task instance's state is in a given set of valid states.
 
-    :param valid_states: A list of valid states that a task instance can have to meet
-        this dependency.
-    :type valid_states: set(str)
-    :return: whether or not the task instance's state is valid
-    """
-    def __init__(self, valid_states):
+        :param valid_states: A list of valid states that a task instance can have to meet this dependency.
+        :type valid_states: set(str)
+        """
         super().__init__()
 
         if not valid_states:
@@ -42,7 +43,7 @@ class ValidStateDep(BaseTIDep):
         self._valid_states = valid_states
 
     def __eq__(self, other):
-        return type(self) == type(other) and self._valid_states == other._valid_states
+        return isinstance(self, type(other)) and self._valid_states == other._valid_states
 
     def __hash__(self):
         return hash((type(self), tuple(self._valid_states)))
