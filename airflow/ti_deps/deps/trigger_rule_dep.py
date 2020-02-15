@@ -57,7 +57,7 @@ class TriggerRuleDep(BaseTIDep):
             counter.get(State.UPSTREAM_FAILED, 0), sum(counter.values())
 
     @provide_session
-    def _get_dep_statuses(self, ti, session, dep_context):
+    def _get_dep_statuses(self, ti, session, dep_context=None):
         TR = airflow.utils.trigger_rule.TriggerRule
         # Checking that all upstream dependencies have succeeded
         if not ti.task.upstream_list:

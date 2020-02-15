@@ -26,7 +26,7 @@ class DagrunRunningDep(BaseTIDep):
     IGNOREABLE = True
 
     @provide_session
-    def _get_dep_statuses(self, ti, session, dep_context):
+    def _get_dep_statuses(self, ti, session, dep_context=None):
         dag = ti.task.dag
         dagrun = ti.get_dagrun(session)
         if not dagrun:

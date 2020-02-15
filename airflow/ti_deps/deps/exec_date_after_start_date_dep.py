@@ -25,7 +25,7 @@ class ExecDateAfterStartDateDep(BaseTIDep):
     IGNOREABLE = True
 
     @provide_session
-    def _get_dep_statuses(self, ti, session, dep_context):
+    def _get_dep_statuses(self, ti, session, dep_context=None):
         if ti.task.start_date and ti.execution_date < ti.task.start_date:
             yield self._failing_status(
                 reason="The execution date is {0} but this is before the task's start "

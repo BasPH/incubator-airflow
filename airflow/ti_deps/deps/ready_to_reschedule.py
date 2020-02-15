@@ -30,7 +30,7 @@ class ReadyToRescheduleDep(BaseTIDep):
     RESCHEDULEABLE_STATES = {State.UP_FOR_RESCHEDULE, State.NONE}
 
     @provide_session
-    def _get_dep_statuses(self, ti, session, dep_context):
+    def _get_dep_statuses(self, ti, session, dep_context=None):
         """
         Determines whether a task is ready to be rescheduled. Only tasks in
         NONE state with at least one row in task_reschedule table are

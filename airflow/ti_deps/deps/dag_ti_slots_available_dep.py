@@ -21,11 +21,13 @@ from airflow.utils.session import provide_session
 
 
 class DagTISlotsAvailableDep(BaseTIDep):
+    """Check if the maximum concurrency of the DAG has been reached or not."""
+
     NAME = "Task Instance Slots Available"
     IGNOREABLE = True
 
     @provide_session
-    def _get_dep_statuses(self, ti, session, dep_context):
+    def _get_dep_statuses(self, ti, session, dep_context=None):
         if ti.task.dag.concurrency_reached:
             yield self._failing_status(
                 reason="The maximum number of running tasks ({0}) for this task's DAG "
