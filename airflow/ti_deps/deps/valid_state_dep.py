@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from typing import Set
+from typing import Optional, Set, Union
 
 from airflow.exceptions import AirflowException
 from airflow.ti_deps.deps.base_ti_dep import BaseTIDep
@@ -28,7 +28,7 @@ class ValidStateDep(BaseTIDep):
     NAME = "Task Instance State"
     IGNOREABLE = True
 
-    def __init__(self, valid_states: Set[str]):
+    def __init__(self, valid_states: Union[Set[str], Set[Optional[str]]]):
         """
         Ensures that the task instance's state is in a given set of valid states.
 
