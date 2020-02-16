@@ -74,7 +74,7 @@ class BaseTIDep:
         raise NotImplementedError
 
     @provide_session
-    def get_dep_statuses(self, ti, session, dep_context=None):
+    def get_dep_statuses(self, ti, session, dep_context):
         """
         Wrapper around the private _get_dep_statuses method that contains some global
         checks for all dependencies.
@@ -86,12 +86,6 @@ class BaseTIDep:
         :param dep_context: the context for which this dependency should be evaluated for
         :type dep_context: DepContext
         """
-        # this avoids a circular dependency
-        from airflow.ti_deps.dep_context import DepContext
-
-        if dep_context is None:
-            dep_context = DepContext()
-
         if self.IGNOREABLE and dep_context.ignore_all_deps:
             yield self._passing_status(
                 reason="Context specified all dependencies should be ignored.")
