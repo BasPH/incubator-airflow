@@ -21,7 +21,7 @@ from datetime import datetime
 from unittest.mock import Mock
 
 from airflow.models import DAG
-from airflow.models.baseoperator import BaseOperator
+from airflow.operators.base import BaseOperator
 from airflow.ti_deps.dep_context import DepContext
 from airflow.ti_deps.deps.task_concurrency_dep import TaskConcurrencyDep
 

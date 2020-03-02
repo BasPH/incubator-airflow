@@ -20,7 +20,7 @@ from typing import FrozenSet, NamedTuple, Optional
 import attr
 
 from airflow.models import TaskInstance
-from airflow.models.baseoperator import BaseOperator, BaseOperatorLink
+from airflow.operators.base import BaseOperator, BaseOperatorLink
 from airflow.utils.decorators import apply_defaults
 
 

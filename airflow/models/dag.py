@@ -43,11 +43,11 @@ from airflow.exceptions import (
     AirflowDagCycleException, AirflowException, DagNotFound, DuplicateTaskIdFound, TaskNotFound,
 )
 from airflow.models.base import ID_LEN, Base
-from airflow.models.baseoperator import BaseOperator
 from airflow.models.dagbag import DagBag
 from airflow.models.dagpickle import DagPickle
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance, clear_task_instances
+from airflow.operators.base import BaseOperator
 from airflow.settings import MIN_SERIALIZED_DAG_UPDATE_INTERVAL, STORE_SERIALIZED_DAGS
 from airflow.utils import timezone
 from airflow.utils.dates import cron_presets, date_range as utils_date_range

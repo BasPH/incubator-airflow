@@ -18,7 +18,7 @@
 
 import json
 
-from airflow.models import BaseOperator
+from airflow.operators.base import BaseOperator
 from airflow.providers.apache.druid.hooks.druid import DruidHook
 from airflow.utils.decorators import apply_defaults
 

@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from airflow.operators.bash import BaseOperator
+from airflow.operators.base import BaseOperator
 from airflow.providers.dingding.hooks.dingding import DingdingHook
 from airflow.utils.decorators import apply_defaults
 

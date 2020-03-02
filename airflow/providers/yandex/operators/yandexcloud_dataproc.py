@@ -17,7 +17,7 @@
 
 from typing import Dict, Iterable, Optional, Union
 
-from airflow.models import BaseOperator
+from airflow.operators.base import BaseOperator
 from airflow.providers.yandex.hooks.yandexcloud_dataproc import DataprocHook
 from airflow.utils.decorators import apply_defaults
 

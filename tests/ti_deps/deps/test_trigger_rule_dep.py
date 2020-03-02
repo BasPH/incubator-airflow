@@ -22,7 +22,7 @@ from unittest.mock import Mock
 
 from airflow import settings
 from airflow.models import DAG, TaskInstance
-from airflow.models.baseoperator import BaseOperator
+from airflow.operators.base import BaseOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.ti_deps.deps.trigger_rule_dep import TriggerRuleDep
 from airflow.utils import timezone

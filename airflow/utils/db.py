@@ -26,12 +26,13 @@ from airflow.configuration import conf
 from airflow.jobs.base_job import BaseJob  # noqa: F401 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from airflow.models import (  # noqa: F401 # pylint: disable=unused-import
-    DAG, XCOM_RETURN_KEY, BaseOperator, BaseOperatorLink, Connection, DagBag, DagModel, DagPickle, DagRun,
-    DagTag, Log, Pool, SkipMixin, SlaMiss, TaskFail, TaskInstance, TaskReschedule, Variable, XCom,
+    DAG, XCOM_RETURN_KEY, Connection, DagBag, DagModel, DagPickle, DagRun, DagTag, Log, Pool, SkipMixin,
+    SlaMiss, TaskFail, TaskInstance, TaskReschedule, Variable, XCom,
 )
 # We need to add this model manually to get reset working well
 # noinspection PyUnresolvedReferences
 from airflow.models.serialized_dag import SerializedDagModel  # noqa: F401  # pylint: disable=unused-import
+from airflow.operators.base import BaseOperator, BaseOperatorLink
 # TODO: remove create_session once we decide to break backward compatibility
 from airflow.utils.session import (  # noqa: F401 # pylint: disable=unused-import
     create_session, provide_session,

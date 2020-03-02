@@ -44,7 +44,7 @@ from airflow.configuration import conf
 from airflow.executors.celery_executor import CeleryExecutor
 from airflow.jobs.base_job import BaseJob
 from airflow.models import DAG, Connection, DagRun, TaskInstance
-from airflow.models.baseoperator import BaseOperator, BaseOperatorLink
+from airflow.operators.base import BaseOperator, BaseOperatorLink
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.settings import Session
 from airflow.ti_deps.dependencies import QUEUEABLE_STATES, RUNNABLE_STATES

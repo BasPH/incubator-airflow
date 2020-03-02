@@ -24,7 +24,8 @@ from typing import Dict, Iterable
 from airflow.exceptions import (
     AirflowException, AirflowRescheduleException, AirflowSensorTimeout, AirflowSkipException,
 )
-from airflow.models import BaseOperator, SkipMixin, TaskReschedule
+from airflow.models import SkipMixin, TaskReschedule
+from airflow.operators.base import BaseOperator
 from airflow.ti_deps.deps.ready_to_reschedule import ReadyToRescheduleDep
 from airflow.utils import timezone
 from airflow.utils.decorators import apply_defaults

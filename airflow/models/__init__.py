@@ -17,7 +17,6 @@
 # under the License.
 """Airflow models"""
 from airflow.models.base import ID_LEN, Base
-from airflow.models.baseoperator import BaseOperator, BaseOperatorLink
 from airflow.models.connection import Connection
 from airflow.models.dag import DAG, DagModel, DagTag
 from airflow.models.dagbag import DagBag
@@ -33,6 +32,7 @@ from airflow.models.taskinstance import TaskInstance, clear_task_instances
 from airflow.models.taskreschedule import TaskReschedule
 from airflow.models.variable import Variable
 from airflow.models.xcom import XCOM_RETURN_KEY, XCom
+from airflow.operators.base import BaseOperator, BaseOperatorLink  # noqa # pylint: disable=unused-import
 
 try:
     from airflow.models.kubernetes import KubeResourceVersion, KubeWorkerIdentifier
