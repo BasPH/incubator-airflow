@@ -579,13 +579,6 @@ SECRET_KEY = b64encode(os.urandom(16)).decode('utf-8')
 
 TEMPLATE_START = (
     '# ----------------------- TEMPLATE BEGINS HERE -----------------------')
-if not os.path.isfile(TEST_CONFIG_FILE):
-    log.info(
-        'Creating new Airflow config file for unit tests in: %s', TEST_CONFIG_FILE
-    )
-    with open(TEST_CONFIG_FILE, 'w') as file:
-        cfg = parameterized_config(TEST_CONFIG)
-        file.write(cfg.split(TEMPLATE_START)[-1].strip())
 if not os.path.isfile(AIRFLOW_CONFIG):
     log.info(
         'Creating new Airflow config file in: %s',
@@ -631,6 +624,11 @@ if not os.path.isfile(WEBSERVER_CONFIG):
         file.write(DEFAULT_WEBSERVER_CONFIG)
 
 if conf.getboolean('core', 'unit_test_mode'):
+    if not os.path.isfile(TEST_CONFIG_FILE):
+        log.info("Creating new Airflow config file for unit tests in: %s", TEST_CONFIG_FILE)
+        with open(TEST_CONFIG_FILE, 'w') as file:
+            cfg = parameterized_config(TEST_CONFIG)
+            file.write(cfg.split(TEMPLATE_START)[-1].strip())
     conf.load_test_config()
 
 
