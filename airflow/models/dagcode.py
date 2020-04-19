@@ -215,3 +215,12 @@ class DagCode(Base):
         # Only 7 bytes because MySQL BigInteger can hold only 8 bytes (signed).
         return struct.unpack('>Q', hashlib.sha1(
             full_filepath.encode('utf-8')).digest()[-8:])[0] >> 8
+
+    @classmethod
+    @provide_session
+    def move_fileloc(cls, src_fileloc: str, dest_fileloc: str, session=None):
+        dag_code = session.query(cls).filter(cls.fileloc_hash == cls.dag_fileloc_hash(src_fileloc)).first()
+        dag_code.fileloc = dest_fileloc
+        dag_code.fileloc_hash = DagCode.dag_fileloc_hash(dest_fileloc)
+        session.merge(dag_code)
+        log.info("Moved DagCode fileloc from %s to %s", src_fileloc, dest_fileloc)

@@ -213,3 +213,15 @@ class SerializedDagModel(Base):
                     min_update_interval=MIN_SERIALIZED_DAG_UPDATE_INTERVAL,
                     session=session
                 )
+
+    @classmethod
+    @provide_session
+    def move_fileloc(cls, src_fileloc: str, dest_fileloc: str, session=None):
+        dest_fileloc_hash = DagCode.dag_fileloc_hash(dest_fileloc)
+        n_changed = (
+            session.query(cls)
+            .filter(cls.fileloc_hash == DagCode.dag_fileloc_hash(src_fileloc))
+            .update({"fileloc": dest_fileloc, "fileloc_hash": dest_fileloc_hash})
+        )
+        session.commit()
+        log.info("Moved fileloc of %s serialized DAG(s) from %s to %s", n_changed, src_fileloc, dest_fileloc)

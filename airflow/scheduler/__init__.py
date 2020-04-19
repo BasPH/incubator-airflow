@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,21 +15,3 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
-[pytest]
-addopts =
-    -rasl
-    --verbosity=2
-;    This will treat all tests as flaky
-;    --force-flaky
-norecursedirs =
-    .eggs
-    airflow
-    tests/dags_with_system_exit
-    tests/test_utils
-    tests/dags_corrupted
-    tests/dags
-faulthandler_timeout = 480
-log_print = True
-log_level = INFO
-log_cli = True
